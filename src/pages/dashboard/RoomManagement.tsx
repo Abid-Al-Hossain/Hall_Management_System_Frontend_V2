@@ -1,17 +1,26 @@
-import React, { useState } from 'react';
-import { 
-  Home, Users, Key, Trash2, Edit, Plus, Search, 
-  Filter, Download, RefreshCw, Settings, AlertCircle 
-} from 'lucide-react';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import {
+  Building,
+  Users,
+  CheckCircle,
+  AlertTriangle,
+  Search,
+  Plus,
+  Settings,
+  Edit,
+  Trash2,
+} from "lucide-react";
+import Modal from "../../components/common/Modal";
 
 interface Room {
   id: number;
   number: string;
   floor: string;
-  type: 'Single' | 'Double' | 'Triple';
+  type: "Single" | "Double" | "Triple";
   capacity: number;
   occupied: number;
-  status: 'Available' | 'Occupied' | 'Maintenance';
+  status: "Available" | "Occupied" | "Maintenance";
   lastMaintenance: string;
   monthlyRent: number;
   facilities: string[];
@@ -23,39 +32,57 @@ interface Room {
 }
 
 const RoomManagement: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterFloor, setFilterFloor] = useState('all');
-  const [filterType, setFilterType] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterFloor, setFilterFloor] = useState("all");
+  const [filterType, setFilterType] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
   const [showAddModal, setShowAddModal] = useState(false);
 
   const rooms: Room[] = [
     {
       id: 1,
-      number: '101',
-      floor: '1st',
-      type: 'Double',
+      number: "101",
+      floor: "1st",
+      type: "Double",
       capacity: 2,
       occupied: 2,
-      status: 'Occupied',
-      lastMaintenance: '2024-02-15',
+      status: "Occupied",
+      lastMaintenance: "2024-02-15",
       monthlyRent: 5000,
-      facilities: ['AC', 'Attached Bathroom', 'Balcony'],
+      facilities: ["AC", "Attached Bathroom", "Balcony"],
       occupants: [
-        { id: 1, name: 'John Doe', studentId: '2024001' },
-        { id: 2, name: 'Jane Smith', studentId: '2024002' }
-      ]
+        { id: 1, name: "John Doe", studentId: "2024001" },
+        { id: 2, name: "Jane Smith", studentId: "2024002" },
+      ],
     },
     // Add more room data...
   ];
 
-  const filteredRooms = rooms.filter(room => {
-    const matchesSearch = room.number.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFloor = filterFloor === 'all' || room.floor === filterFloor;
-    const matchesType = filterType === 'all' || room.type === filterType;
-    const matchesStatus = filterStatus === 'all' || room.status === filterStatus;
+  const filteredRooms = rooms.filter((room) => {
+    const matchesSearch = room.number
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesFloor = filterFloor === "all" || room.floor === filterFloor;
+    const matchesType = filterType === "all" || room.type === filterType;
+    const matchesStatus =
+      filterStatus === "all" || room.status === filterStatus;
     return matchesSearch && matchesFloor && matchesType && matchesStatus;
   });
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, scale: 0.95 },
+    visible: { opacity: 1, scale: 1 },
+  };
 
   return (
     <div className="space-y-6">
@@ -63,13 +90,15 @@ const RoomManagement: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h2 className="text-2xl font-bold text-gray-800">Room Management</h2>
         <div className="flex gap-3">
-          <button 
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-md"
           >
             <Plus size={20} />
             Add New Room
-          </button>
+          </motion.button>
           <button className="p-2 text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-100">
             <Settings size={20} />
           </button>
@@ -78,60 +107,61 @@ const RoomManagement: React.FC = () => {
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-sm text-gray-600">Total Rooms</p>
-              <h3 className="text-2xl font-bold text-gray-800 mt-1">{rooms.length}</h3>
-            </div>
-            <div className="p-3 bg-indigo-100 rounded-lg">
-              <Home className="text-indigo-600" size={24} />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-sm text-gray-600">Available Rooms</p>
-              <h3 className="text-2xl font-bold text-green-600 mt-1">
-                {rooms.filter(r => r.status === 'Available').length}
-              </h3>
-            </div>
-            <div className="p-3 bg-green-100 rounded-lg">
-              <Key className="text-green-600" size={24} />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-sm text-gray-600">Under Maintenance</p>
-              <h3 className="text-2xl font-bold text-orange-600 mt-1">
-                {rooms.filter(r => r.status === 'Maintenance').length}
-              </h3>
-            </div>
-            <div className="p-3 bg-orange-100 rounded-lg">
-              <AlertCircle className="text-orange-600" size={24} />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-sm text-gray-600">Occupancy Rate</p>
-              <h3 className="text-2xl font-bold text-blue-600 mt-1">
-                {Math.round((rooms.reduce((acc, room) => acc + room.occupied, 0) / 
-                  rooms.reduce((acc, room) => acc + room.capacity, 0)) * 100)}%
-              </h3>
-            </div>
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <Users className="text-blue-600" size={24} />
-            </div>
-          </div>
-        </div>
+        {[
+          {
+            label: "Total Rooms",
+            value: rooms.length,
+            icon: Building,
+            color: "indigo",
+            bgClass: "bg-indigo-100",
+            textClass: "text-indigo-600",
+          },
+          {
+            label: "Available Rooms",
+            value: rooms.filter((r) => r.status === "Available").length,
+            icon: CheckCircle,
+            color: "green",
+            bgClass: "bg-green-100",
+            textClass: "text-green-600",
+          },
+          {
+            label: "Under Maintenance",
+            value: rooms.filter((r) => r.status === "Maintenance").length,
+            icon: AlertTriangle,
+            color: "orange",
+            bgClass: "bg-orange-100",
+            textClass: "text-orange-600",
+          },
+          {
+            label: "Occupancy Rate",
+            value: `${Math.round((rooms.reduce((acc, room) => acc + room.occupied, 0) / rooms.reduce((acc, room) => acc + room.capacity, 0)) * 100)}%`,
+            icon: Users,
+            color: "blue",
+            bgClass: "bg-blue-100",
+            textClass: "text-blue-600",
+          },
+        ].map((stat, i) => {
+          const Icon = stat.icon;
+          return (
+            <motion.div
+              key={i}
+              whileHover={{ y: -5 }}
+              className="bg-white rounded-xl shadow-md p-6"
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm text-gray-600">{stat.label}</p>
+                  <h3 className={"text-2xl font-bold mt-1 " + stat.textClass}>
+                    {stat.value}
+                  </h3>
+                </div>
+                <div className={"p-3 rounded-lg " + stat.bgClass}>
+                  <Icon className={stat.textClass} size={24} />
+                </div>
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
 
       {/* Search and Filters */}
@@ -139,7 +169,10 @@ const RoomManagement: React.FC = () => {
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <Search
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                size={20}
+              />
               <input
                 type="text"
                 placeholder="Search rooms..."
@@ -156,9 +189,11 @@ const RoomManagement: React.FC = () => {
               className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
             >
               <option value="all">All Floors</option>
-              <option value="1st">1st Floor</option>
-              <option value="2nd">2nd Floor</option>
-              <option value="3rd">3rd Floor</option>
+              {["1st", "2nd", "3rd"].map((f) => (
+                <option key={f} value={f}>
+                  {f} Floor
+                </option>
+              ))}
             </select>
             <select
               value={filterType}
@@ -166,9 +201,11 @@ const RoomManagement: React.FC = () => {
               className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
             >
               <option value="all">All Types</option>
-              <option value="Single">Single</option>
-              <option value="Double">Double</option>
-              <option value="Triple">Triple</option>
+              {["Single", "Double", "Triple"].map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
             </select>
             <select
               value={filterStatus}
@@ -176,29 +213,64 @@ const RoomManagement: React.FC = () => {
               className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
             >
               <option value="all">All Status</option>
-              <option value="Available">Available</option>
-              <option value="Occupied">Occupied</option>
-              <option value="Maintenance">Maintenance</option>
+              {["Available", "Occupied", "Maintenance"].map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
             </select>
           </div>
         </div>
       </div>
 
-      {/* Room Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredRooms.map(room => (
-          <div key={room.id} className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow">
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="text-xl font-bold text-gray-800">Room {room.number}</h3>
-                  <p className="text-sm text-gray-600">{room.floor} Floor</p>
-                </div>
-                <span className={`px-3 py-1 rounded-full text-sm ${
-                  room.status === 'Available' ? 'bg-green-100 text-green-800' :
-                  room.status === 'Occupied' ? 'bg-blue-100 text-blue-800' :
-                  'bg-orange-100 text-orange-800'
-                }`}>
+      {/* Room Cards Grid */}
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      >
+        {filteredRooms.map((room) => {
+          const isAvailable = room.status === "Available";
+          const isMaintenance = room.status === "Maintenance";
+
+          return (
+            <motion.div
+              key={room.id}
+              variants={itemVariants}
+              whileHover={{ y: -5 }}
+              className={
+                "bg-white rounded-2xl shadow-sm border overflow-hidden " +
+                (isAvailable
+                  ? "border-green-100"
+                  : isMaintenance
+                    ? "border-orange-100"
+                    : "border-gray-100")
+              }
+            >
+              <div
+                className={
+                  "p-4 border-b border-gray-100 flex justify-between items-center " +
+                  (isAvailable
+                    ? "bg-green-50"
+                    : isMaintenance
+                      ? "bg-orange-50"
+                      : "bg-gray-50")
+                }
+              >
+                <h3 className="text-xl font-bold text-gray-800">
+                  Room {room.number}
+                </h3>
+                <span
+                  className={
+                    "px-3 py-1 rounded-full text-sm font-bold " +
+                    (isAvailable
+                      ? "bg-green-100 text-green-700"
+                      : isMaintenance
+                        ? "bg-orange-100 text-orange-700"
+                        : "bg-gray-200 text-gray-700")
+                  }
+                >
                   {room.status}
                 </span>
               </div>
@@ -210,7 +282,9 @@ const RoomManagement: React.FC = () => {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Capacity:</span>
-                  <span className="font-medium">{room.occupied}/{room.capacity}</span>
+                  <span className="font-medium">
+                    {room.occupied}/{room.capacity}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Monthly Rent:</span>
@@ -222,7 +296,7 @@ const RoomManagement: React.FC = () => {
                 <p className="text-sm text-gray-600 mb-2">Facilities:</p>
                 <div className="flex flex-wrap gap-2">
                   {room.facilities.map((facility, index) => (
-                    <span 
+                    <span
                       key={index}
                       className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs"
                     >
@@ -232,32 +306,95 @@ const RoomManagement: React.FC = () => {
                 </div>
               </div>
 
-              {room.occupants && (
-                <div className="mt-4 pt-4 border-t">
-                  <p className="text-sm text-gray-600 mb-2">Occupants:</p>
-                  <div className="space-y-2">
-                    {room.occupants.map(occupant => (
-                      <div key={occupant.id} className="flex justify-between text-sm">
-                        <span>{occupant.name}</span>
-                        <span className="text-gray-600">{occupant.studentId}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               <div className="mt-6 flex justify-end gap-2">
-                <button className="p-2 text-blue-600 hover:bg-blue-50 rounded">
+                <button className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors">
                   <Edit size={18} />
                 </button>
-                <button className="p-2 text-red-600 hover:bg-red-50 rounded">
+                <button className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors">
                   <Trash2 size={18} />
                 </button>
               </div>
+            </motion.div>
+          );
+        })}
+      </motion.div>
+
+      {/* Add New Room Modal */}
+      <Modal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        title="Add New Room"
+      >
+        <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-gray-700">
+                Room Number
+              </label>
+              <input
+                type="text"
+                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                placeholder="e.g. 101"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-gray-700">Floor</label>
+              <select className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                <option>1st Floor</option>
+                <option>2nd Floor</option>
+                <option>3rd Floor</option>
+              </select>
             </div>
           </div>
-        ))}
-      </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-gray-700">
+                Room Type
+              </label>
+              <select className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                <option>Single</option>
+                <option>Double</option>
+                <option>Triple</option>
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-gray-700">
+                Monthly Rent (৳)
+              </label>
+              <input
+                type="number"
+                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                placeholder="e.g. 5000"
+              />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-gray-700">
+              Facilities (Comma separated)
+            </label>
+            <input
+              type="text"
+              className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+              placeholder="AC, Wifi, etc."
+            />
+          </div>
+          <div className="flex justify-end gap-3 mt-6">
+            <button
+              type="button"
+              onClick={() => setShowAddModal(false)}
+              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-lg shadow-indigo-200"
+            >
+              Add Room
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };

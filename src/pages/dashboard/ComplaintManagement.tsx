@@ -1,9 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
-  AlertCircle, Filter, Search, Plus, Clock,
-  CheckCircle, MessageCircle, Users,
-  Building, Download, RefreshCw, Wrench
-} from 'lucide-react';
+  AlertCircle,
+  Search,
+  Plus,
+  Clock,
+  CheckCircle,
+  MessageCircle,
+  Users,
+  Building,
+  Download,
+  RefreshCw,
+  Wrench,
+} from "lucide-react";
 
 interface Complaint {
   id: number;
@@ -11,20 +19,20 @@ interface Complaint {
   description: string;
   studentName: string;
   roomNumber: string;
-  status: 'pending' | 'in-progress' | 'resolved';
-  priority: 'high' | 'medium' | 'low';
+  status: "pending" | "in-progress" | "resolved";
+  priority: "high" | "medium" | "low";
   createdAt: string;
   updatedAt: string;
-  category: 'maintenance' | 'facility' | 'roommate' | 'other';
+  category: "maintenance" | "facility" | "roommate" | "other";
   assignedTo?: string;
   comments: number;
 }
 
 const ComplaintManagement: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [filterPriority, setFilterPriority] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterCategory, setFilterCategory] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterPriority, setFilterPriority] = useState("all");
 
   const complaints: Complaint[] = [
     {
@@ -39,41 +47,56 @@ const ComplaintManagement: React.FC = () => {
       updatedAt: "2024-03-15",
       category: "maintenance",
       assignedTo: "Maintenance Team A",
-      comments: 3
+      comments: 3,
     },
     // Add more complaints...
   ];
 
-  const getStatusColor = (status: Complaint['status']) => {
+  const getStatusColor = (status: Complaint["status"]) => {
     switch (status) {
-      case 'pending': return 'bg-red-100 text-red-800';
-      case 'in-progress': return 'bg-orange-100 text-orange-800';
-      case 'resolved': return 'bg-green-100 text-green-800';
+      case "pending":
+        return "bg-red-100 text-red-800";
+      case "in-progress":
+        return "bg-orange-100 text-orange-800";
+      case "resolved":
+        return "bg-green-100 text-green-800";
     }
   };
 
-  const getPriorityColor = (priority: Complaint['priority']) => {
+  const getPriorityColor = (priority: Complaint["priority"]) => {
     switch (priority) {
-      case 'high': return 'bg-red-100 text-red-800';
-      case 'medium': return 'bg-orange-100 text-orange-800';
-      case 'low': return 'bg-green-100 text-green-800';
+      case "high":
+        return "bg-red-100 text-red-800";
+      case "medium":
+        return "bg-orange-100 text-orange-800";
+      case "low":
+        return "bg-green-100 text-green-800";
     }
   };
 
-  const getCategoryIcon = (category: Complaint['category']) => {
+  const getCategoryIcon = (category: Complaint["category"]) => {
     switch (category) {
-      case 'maintenance': return Wrench;
-      case 'facility': return Building;
-      case 'roommate': return Users;
-      case 'other': return AlertCircle;
+      case "maintenance":
+        return Wrench;
+      case "facility":
+        return Building;
+      case "roommate":
+        return Users;
+      case "other":
+        return AlertCircle;
     }
   };
 
-  const filteredComplaints = complaints.filter(complaint => {
-    const matchesSearch = complaint.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = filterCategory === 'all' || complaint.category === filterCategory;
-    const matchesStatus = filterStatus === 'all' || complaint.status === filterStatus;
-    const matchesPriority = filterPriority === 'all' || complaint.priority === filterPriority;
+  const filteredComplaints = complaints.filter((complaint) => {
+    const matchesSearch = complaint.title
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesCategory =
+      filterCategory === "all" || complaint.category === filterCategory;
+    const matchesStatus =
+      filterStatus === "all" || complaint.status === filterStatus;
+    const matchesPriority =
+      filterPriority === "all" || complaint.priority === filterPriority;
     return matchesSearch && matchesCategory && matchesStatus && matchesPriority;
   });
 
@@ -81,7 +104,9 @@ const ComplaintManagement: React.FC = () => {
     <div className="space-y-6">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <h2 className="text-2xl font-bold text-gray-800">Complaint Management</h2>
+        <h2 className="text-2xl font-bold text-gray-800">
+          Complaint Management
+        </h2>
         <div className="flex gap-3">
           <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
             <Plus size={20} />
@@ -104,7 +129,9 @@ const ComplaintManagement: React.FC = () => {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm text-gray-600">Total Complaints</p>
-              <h3 className="text-2xl font-bold text-gray-800 mt-1">{complaints.length}</h3>
+              <h3 className="text-2xl font-bold text-gray-800 mt-1">
+                {complaints.length}
+              </h3>
             </div>
             <div className="p-3 bg-indigo-100 rounded-lg">
               <AlertCircle className="text-indigo-600" size={24} />
@@ -117,7 +144,7 @@ const ComplaintManagement: React.FC = () => {
             <div>
               <p className="text-sm text-gray-600">Pending</p>
               <h3 className="text-2xl font-bold text-red-600 mt-1">
-                {complaints.filter(c => c.status === 'pending').length}
+                {complaints.filter((c) => c.status === "pending").length}
               </h3>
             </div>
             <div className="p-3 bg-red-100 rounded-lg">
@@ -131,7 +158,7 @@ const ComplaintManagement: React.FC = () => {
             <div>
               <p className="text-sm text-gray-600">In Progress</p>
               <h3 className="text-2xl font-bold text-orange-600 mt-1">
-                {complaints.filter(c => c.status === 'in-progress').length}
+                {complaints.filter((c) => c.status === "in-progress").length}
               </h3>
             </div>
             <div className="p-3 bg-orange-100 rounded-lg">
@@ -145,7 +172,7 @@ const ComplaintManagement: React.FC = () => {
             <div>
               <p className="text-sm text-gray-600">Resolved</p>
               <h3 className="text-2xl font-bold text-green-600 mt-1">
-                {complaints.filter(c => c.status === 'resolved').length}
+                {complaints.filter((c) => c.status === "resolved").length}
               </h3>
             </div>
             <div className="p-3 bg-green-100 rounded-lg">
@@ -160,7 +187,10 @@ const ComplaintManagement: React.FC = () => {
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <Search
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                size={20}
+              />
               <input
                 type="text"
                 placeholder="Search complaints..."
@@ -208,25 +238,33 @@ const ComplaintManagement: React.FC = () => {
 
       {/* Complaints List */}
       <div className="space-y-4">
-        {filteredComplaints.map(complaint => {
+        {filteredComplaints.map((complaint) => {
           const CategoryIcon = getCategoryIcon(complaint.category);
           return (
-            <div 
-              key={complaint.id} 
+            <div
+              key={complaint.id}
               className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow"
             >
               <div className="p-6">
                 <div className="flex items-start gap-4">
-                  <div className={`p-2 rounded-lg ${getPriorityColor(complaint.priority)}`}>
+                  <div
+                    className={`p-2 rounded-lg ${getPriorityColor(complaint.priority)}`}
+                  >
                     <CategoryIcon size={20} />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-start justify-between">
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-800">{complaint.title}</h3>
-                        <p className="text-sm text-gray-600 mt-1">{complaint.description}</p>
+                        <h3 className="text-lg font-semibold text-gray-800">
+                          {complaint.title}
+                        </h3>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {complaint.description}
+                        </p>
                       </div>
-                      <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(complaint.status)}`}>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs ${getStatusColor(complaint.status)}`}
+                      >
                         {complaint.status}
                       </span>
                     </div>
@@ -251,7 +289,10 @@ const ComplaintManagement: React.FC = () => {
                     {complaint.assignedTo && (
                       <div className="mt-4 pt-4 border-t">
                         <p className="text-sm text-gray-600">
-                          Assigned to: <span className="font-medium text-gray-800">{complaint.assignedTo}</span>
+                          Assigned to:{" "}
+                          <span className="font-medium text-gray-800">
+                            {complaint.assignedTo}
+                          </span>
                         </p>
                       </div>
                     )}
@@ -266,4 +307,4 @@ const ComplaintManagement: React.FC = () => {
   );
 };
 
-export default ComplaintManagement; 
+export default ComplaintManagement;

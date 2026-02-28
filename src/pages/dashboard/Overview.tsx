@@ -1,9 +1,23 @@
-import React from 'react';
+import React from "react";
 import {
-  Users, Home, Bell, TrendingUp, Calendar, Clock,
-  DollarSign, Activity, ArrowUp, ArrowDown, BarChart2
-} from 'lucide-react';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+  Users,
+  Home,
+  Bell,
+  DollarSign,
+  ArrowUp,
+  ArrowDown,
+} from "lucide-react";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 interface OverviewProps {
   stats: {
@@ -19,16 +33,16 @@ interface OverviewProps {
 const Overview: React.FC<OverviewProps> = ({ stats }) => {
   // Sample data for charts
   const revenueData = [
-    { month: 'Jan', amount: 125000 },
-    { month: 'Feb', amount: 130000 },
-    { month: 'Mar', amount: 150000 },
+    { month: "Jan", amount: 125000 },
+    { month: "Feb", amount: 130000 },
+    { month: "Mar", amount: 150000 },
     // Add more months...
   ];
 
   const occupancyData = [
-    { month: 'Jan', occupied: 180, available: 70 },
-    { month: 'Feb', occupied: 190, available: 60 },
-    { month: 'Mar', occupied: 200, available: 50 },
+    { month: "Jan", occupied: 180, available: 70 },
+    { month: "Feb", occupied: 190, available: 60 },
+    { month: "Mar", occupied: 200, available: 50 },
     // Add more months...
   ];
 
@@ -40,7 +54,9 @@ const Overview: React.FC<OverviewProps> = ({ stats }) => {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm text-gray-600">Total Students</p>
-              <h3 className="text-2xl font-bold text-gray-800 mt-1">{stats.totalStudents}</h3>
+              <h3 className="text-2xl font-bold text-gray-800 mt-1">
+                {stats.totalStudents}
+              </h3>
               <span className="text-xs text-green-600 flex items-center mt-1">
                 <ArrowUp size={12} className="mr-1" />
                 12% increase
@@ -57,7 +73,12 @@ const Overview: React.FC<OverviewProps> = ({ stats }) => {
             <div>
               <p className="text-sm text-gray-600">Room Occupancy</p>
               <h3 className="text-2xl font-bold text-gray-800 mt-1">
-                {Math.round((stats.occupiedRooms / (stats.occupiedRooms + stats.availableRooms)) * 100)}%
+                {Math.round(
+                  (stats.occupiedRooms /
+                    (stats.occupiedRooms + stats.availableRooms)) *
+                    100,
+                )}
+                %
               </h3>
               <span className="text-xs text-orange-600 flex items-center mt-1">
                 <ArrowUp size={12} className="mr-1" />
@@ -92,10 +113,11 @@ const Overview: React.FC<OverviewProps> = ({ stats }) => {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm text-gray-600">Pending Issues</p>
-              <h3 className="text-2xl font-bold text-gray-800 mt-1">{stats.pendingComplaints}</h3>
+              <h3 className="text-2xl font-bold text-gray-800 mt-1">
+                {stats.pendingComplaints}
+              </h3>
               <span className="text-xs text-red-600 flex items-center mt-1">
-                <ArrowDown size={12} className="mr-1" />
-                3 new today
+                <ArrowDown size={12} className="mr-1" />3 new today
               </span>
             </div>
             <div className="p-3 bg-red-100 rounded-lg">
@@ -110,7 +132,9 @@ const Overview: React.FC<OverviewProps> = ({ stats }) => {
         {/* Revenue Trend */}
         <div className="bg-white rounded-xl shadow-md p-6">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">Revenue Trend</h3>
+            <h3 className="text-lg font-semibold text-gray-800">
+              Revenue Trend
+            </h3>
             <select className="text-sm border rounded-lg px-2 py-1">
               <option>Last 6 months</option>
               <option>Last year</option>
@@ -132,7 +156,9 @@ const Overview: React.FC<OverviewProps> = ({ stats }) => {
         {/* Room Occupancy Trend */}
         <div className="bg-white rounded-xl shadow-md p-6">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">Room Occupancy</h3>
+            <h3 className="text-lg font-semibold text-gray-800">
+              Room Occupancy
+            </h3>
             <select className="text-sm border rounded-lg px-2 py-1">
               <option>Last 6 months</option>
               <option>Last year</option>
@@ -155,14 +181,18 @@ const Overview: React.FC<OverviewProps> = ({ stats }) => {
 
       {/* Recent Activity */}
       <div className="bg-white rounded-xl shadow-md p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent Activity</h3>
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">
+          Recent Activity
+        </h3>
         <div className="space-y-4">
           <div className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
             <div className="p-2 bg-green-100 rounded-lg">
               <DollarSign className="text-green-600" size={20} />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-medium text-gray-800">Payment Received</p>
+              <p className="text-sm font-medium text-gray-800">
+                Payment Received
+              </p>
               <p className="text-xs text-gray-500">Room 301 - March Rent</p>
             </div>
             <span className="text-xs text-gray-500">2 hours ago</span>
@@ -173,8 +203,12 @@ const Overview: React.FC<OverviewProps> = ({ stats }) => {
               <Home className="text-orange-600" size={20} />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-medium text-gray-800">New Room Allocation</p>
-              <p className="text-xs text-gray-500">Room 205 assigned to John Doe</p>
+              <p className="text-sm font-medium text-gray-800">
+                New Room Allocation
+              </p>
+              <p className="text-xs text-gray-500">
+                Room 205 assigned to John Doe
+              </p>
             </div>
             <span className="text-xs text-gray-500">5 hours ago</span>
           </div>
@@ -185,7 +219,9 @@ const Overview: React.FC<OverviewProps> = ({ stats }) => {
             </div>
             <div className="flex-1">
               <p className="text-sm font-medium text-gray-800">New Complaint</p>
-              <p className="text-xs text-gray-500">Maintenance required in Room 402</p>
+              <p className="text-xs text-gray-500">
+                Maintenance required in Room 402
+              </p>
             </div>
             <span className="text-xs text-gray-500">1 day ago</span>
           </div>
@@ -195,4 +231,4 @@ const Overview: React.FC<OverviewProps> = ({ stats }) => {
   );
 };
 
-export default Overview; 
+export default Overview;
