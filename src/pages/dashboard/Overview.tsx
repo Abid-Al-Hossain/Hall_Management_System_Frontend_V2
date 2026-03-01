@@ -19,6 +19,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+import { Complaint } from "../../context/MockDataContext";
+
 interface OverviewProps {
   stats: {
     totalStudents: number;
@@ -28,9 +30,10 @@ interface OverviewProps {
     totalNotices: number;
     monthlyRevenue: number;
   };
+  complaints: Complaint[];
 }
 
-const Overview: React.FC<OverviewProps> = ({ stats }) => {
+const Overview: React.FC<OverviewProps> = ({ stats, complaints }) => {
   // Sample data for charts
   const revenueData = [
     { month: "Jan", amount: 125000 },
@@ -179,52 +182,56 @@ const Overview: React.FC<OverviewProps> = ({ stats }) => {
         </div>
       </div>
 
-      {/* Recent Activity */}
+      {/* Recent Complaints */}
       <div className="bg-white rounded-xl shadow-md p-6">
         <h3 className="text-lg font-semibold text-gray-800 mb-4">
-          Recent Activity
+          Recent Complaints
         </h3>
         <div className="space-y-4">
-          <div className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <DollarSign className="text-green-600" size={20} />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-gray-800">
-                Payment Received
-              </p>
-              <p className="text-xs text-gray-500">Room 301 - March Rent</p>
-            </div>
-            <span className="text-xs text-gray-500">2 hours ago</span>
-          </div>
-
-          <div className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
-            <div className="p-2 bg-orange-100 rounded-lg">
-              <Home className="text-orange-600" size={20} />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-gray-800">
-                New Room Allocation
-              </p>
-              <p className="text-xs text-gray-500">
-                Room 205 assigned to John Doe
-              </p>
-            </div>
-            <span className="text-xs text-gray-500">5 hours ago</span>
-          </div>
-
-          <div className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
-            <div className="p-2 bg-red-100 rounded-lg">
-              <Bell className="text-red-600" size={20} />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-gray-800">New Complaint</p>
-              <p className="text-xs text-gray-500">
-                Maintenance required in Room 402
-              </p>
-            </div>
-            <span className="text-xs text-gray-500">1 day ago</span>
-          </div>
+          {complaints.length > 0 ? (
+            complaints.slice(0, 5).map((complaint) => (
+              <div
+                key={complaint.id}
+                className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors"
+              >
+                <div
+                  className={`p-2 rounded-lg ${
+                    complaint.priority.toLowerCase() === "high"
+                      ? "bg-red-100"
+                      : complaint.priority.toLowerCase() === "medium"
+                        ? "bg-orange-100"
+                        : "bg-green-100"
+                  }`}
+                >
+                  <Bell
+                    className={`${
+                      complaint.priority.toLowerCase() === "high"
+                        ? "text-red-600"
+                        : complaint.priority.toLowerCase() === "medium"
+                          ? "text-orange-600"
+                          : "text-green-600"
+                    }`}
+                    size={20}
+                  />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-800">
+                    {complaint.title}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Room {complaint.roomNumber} - {complaint.studentName}
+                  </p>
+                </div>
+                <span className="text-xs text-gray-500">
+                  {complaint.createdAt || complaint.date}
+                </span>
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-gray-500 text-center py-4">
+              No recent complaints
+            </p>
+          )}
         </div>
       </div>
     </div>

@@ -1,36 +1,13 @@
 import { useState } from "react";
 import NoticeItem from "../components/notices/NoticeItem";
+import { useMockData } from "../context/MockDataContext";
 
 const NoticesPage = () => {
+  const { notices } = useMockData();
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const noticesPerPage = 5;
-
-  const notices = [
-    {
-      title: "Maintenance Notice",
-      date: "October 10, 2023",
-      description:
-        "The hall will undergo maintenance on October 15th. Please ensure all personal belongings are secured.",
-      type: "maintenance" as "maintenance",
-    },
-    {
-      title: "Dining Hall Closure",
-      date: "October 8, 2023",
-      description:
-        "The dining hall will be closed on October 12th for a private event. Alternative dining options will be available.",
-      type: "events" as "events",
-    },
-    {
-      title: "Fire Drill",
-      date: "October 5, 2023",
-      description:
-        "A fire drill is scheduled for October 20th at 10 AM. Participation is mandatory for all residents.",
-      type: "updates" as "updates",
-    },
-    // Add more notices as needed
-  ];
 
   const filteredNotices = notices.filter((notice) => {
     return (
@@ -75,13 +52,13 @@ const NoticesPage = () => {
         </select>
       </div>
       <div className="max-w-4xl mx-auto">
-        {currentNotices.map((notice, index) => (
+        {currentNotices.map((notice) => (
           <NoticeItem
-            key={index}
+            key={notice.id}
             title={notice.title}
             date={notice.date}
-            description={notice.description}
-            type={notice.type}
+            description={notice.description || notice.content}
+            type={(notice.type as any) || "updates"}
             onClick={() => alert(`Viewing details for: ${notice.title}`)}
           />
         ))}

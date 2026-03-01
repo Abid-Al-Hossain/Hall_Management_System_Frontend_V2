@@ -20,81 +20,84 @@ import PaymentPage from "./pages/PaymentPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import PageTransition from "./components/layout/PageTransition";
+import { MockDataProvider } from "./context/MockDataContext";
 
 function AnimatedRoutes() {
   const location = useLocation();
 
   return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route
-          path="/"
-          element={
-            <PageTransition>
-              <Hero />
-              <About />
-              <Features />
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/manager"
-          element={
-            <PageTransition>
-              <ManagerDashboard />
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/rooms"
-          element={
-            <PageTransition>
-              <RoomsPage />
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/complaints"
-          element={
-            <PageTransition>
-              <ComplaintsPage />
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/notices"
-          element={
-            <PageTransition>
-              <NoticesPage />
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/payment"
-          element={
-            <PageTransition>
-              <PaymentPage />
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/login"
-          element={
-            <PageTransition>
-              <LoginPage />
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/signup"
-          element={
-            <PageTransition>
-              <SignupPage />
-            </PageTransition>
-          }
-        />
-      </Routes>
-    </AnimatePresence>
+    <MockDataProvider>
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route
+            path="/"
+            element={
+              <PageTransition>
+                <Hero />
+                <About />
+                <Features />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/manager"
+            element={
+              <PageTransition>
+                <ManagerDashboard />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/rooms"
+            element={
+              <PageTransition>
+                <RoomsPage />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/complaints"
+            element={
+              <PageTransition>
+                <ComplaintsPage />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/notices"
+            element={
+              <PageTransition>
+                <NoticesPage />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/payment"
+            element={
+              <PageTransition>
+                <PaymentPage />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              <PageTransition>
+                <LoginPage />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/signup"
+            element={
+              <PageTransition>
+                <SignupPage />
+              </PageTransition>
+            }
+          />
+        </Routes>
+      </AnimatePresence>
+    </MockDataProvider>
   );
 }
 

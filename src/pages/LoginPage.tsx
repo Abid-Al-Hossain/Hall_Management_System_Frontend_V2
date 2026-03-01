@@ -1,13 +1,31 @@
 import { useState } from "react";
 import { Mail, Lock } from "lucide-react";
+import { useMockData } from "../context/MockDataContext";
+import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { login } = useMockData();
+  const navigate = useNavigate();
 
   const handleLogin = () => {
-    // Implement login logic here
-    alert("Login functionality is not implemented yet.");
+    if (!email || !password) {
+      alert("Please enter both email and password.");
+      return;
+    }
+    const success = login(email, password);
+    if (success) {
+      // Find the user to check role, technically current user is updated in context but react might not see it mid-render for the redirect
+      // For this simple mock, if login works we just send to manager if email has 'manager', else root
+      if (email.includes("manager")) {
+        navigate("/manager");
+      } else {
+        navigate("/");
+      }
+    } else {
+      alert("Invalid credentials. Use manager@test.com or student@test.com");
+    }
   };
 
   return (

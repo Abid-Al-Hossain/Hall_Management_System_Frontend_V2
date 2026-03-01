@@ -1,13 +1,27 @@
 import { useState } from "react";
 import { Mail, Lock } from "lucide-react";
+import { useMockData } from "../context/MockDataContext";
+import { useNavigate } from "react-router-dom";
 
 const SignupPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState<"student" | "manager">("student");
+  const { register } = useMockData();
+  const navigate = useNavigate();
 
   const handleSignup = () => {
-    // Implement signup logic here
-    alert("Signup functionality is not implemented yet.");
+    if (!email || !password) {
+      alert("Please enter both email and password.");
+      return;
+    }
+    register(email, password, role);
+    alert("Registration successful! You are now logged in.");
+    if (role === "manager") {
+      navigate("/manager");
+    } else {
+      navigate("/");
+    }
   };
 
   return (
@@ -45,6 +59,23 @@ const SignupPage = () => {
                 placeholder="Enter your password"
                 className="mt-1 block w-full p-2 border-none focus:ring-0"
               />
+            </div>
+          </div>
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700">
+              Role
+            </label>
+            <div className="flex items-center border border-gray-300 rounded-lg shadow-sm focus-within:ring-indigo-500 focus-within:border-indigo-500">
+              <select
+                value={role}
+                onChange={(e) =>
+                  setRole(e.target.value as "student" | "manager")
+                }
+                className="mt-1 block w-full p-2 border-none focus:ring-0 rounded-lg text-gray-700"
+              >
+                <option value="student">Student</option>
+                <option value="manager">Manager</option>
+              </select>
             </div>
           </div>
           <button

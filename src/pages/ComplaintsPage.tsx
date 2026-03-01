@@ -1,59 +1,10 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, AlertCircle } from "lucide-react";
-
-interface Complaint {
-  id: number;
-  title: string;
-  status: "Pending" | "In Progress" | "Resolved";
-  date: string;
-  priority: "Low" | "Medium" | "High";
-  category?: string;
-  location?: string;
-  description?: string;
-  comments?: Array<{
-    id: number;
-    text: string;
-    date: string;
-    user: string;
-  }>;
-}
+import { useMockData, Complaint } from "../context/MockDataContext";
 
 const ComplaintsPage: React.FC = () => {
-  const [complaints, setComplaints] = useState<Complaint[]>([
-    {
-      id: 1,
-      title: "Leaking pipe in washroom",
-      status: "Pending",
-      date: "2024-03-15",
-      priority: "High",
-      category: "Plumbing",
-      location: "Block A, Floor 2",
-      description: "Water leaking from sink pipe causing floor damage",
-      comments: [
-        {
-          id: 1,
-          text: "Maintenance team has been notified",
-          date: "2024-03-15",
-          user: "Admin",
-        },
-      ],
-    },
-    {
-      id: 2,
-      title: "Noisy environment at night",
-      status: "Resolved",
-      date: "2024-03-14",
-      priority: "Medium",
-    },
-    {
-      id: 3,
-      title: "Broken window in room 105",
-      status: "In Progress",
-      date: "2024-03-13",
-      priority: "High",
-    },
-  ]);
+  const { complaints, addComplaint, currentUser } = useMockData();
 
   const [newComplaint, setNewComplaint] = useState("");
   const [priority, setPriority] = useState<Complaint["priority"]>("Medium");
@@ -76,18 +27,14 @@ const ComplaintsPage: React.FC = () => {
     e.preventDefault();
     if (!newComplaint.trim()) return;
 
-    const newEntry: Complaint = {
-      id: complaints.length + 1,
+    addComplaint({
       title: newComplaint,
-      status: "Pending",
-      date: new Date().toISOString().split("T")[0],
-      priority,
-      category: selectedCategory !== "all" ? selectedCategory : undefined,
-      location,
+      priority: priority as "High" | "Medium" | "Low",
+      category: selectedCategory !== "all" ? selectedCategory : "General",
       description,
-      comments: [],
-    };
-    setComplaints([newEntry, ...complaints]);
+      studentName: currentUser?.name || "Anonymous Student",
+      room: location || "Unknown",
+    });
     setIsSubmitted(true);
     resetForm();
     setTimeout(() => setIsSubmitted(false), 3000);

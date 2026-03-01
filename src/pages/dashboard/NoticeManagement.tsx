@@ -11,44 +11,37 @@ import {
   Trash2,
 } from "lucide-react";
 import Modal from "../../components/common/Modal";
-
-interface Notice {
-  id: number;
-  title: string;
-  content: string;
-  category: "Meeting" | "Announcement" | "Event" | "Urgent";
-  date: string;
-  author: string;
-  isPinned: boolean;
-}
+import { useMockData, Notice } from "../../context/MockDataContext";
 
 const NoticeManagement: React.FC = () => {
+  const { notices, addNotice, deleteNotice, currentUser } = useMockData();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [showAddModal, setShowAddModal] = useState(false);
 
-  const [notices] = useState<Notice[]>([
-    {
-      id: 1,
-      title: "Monthly Hall Meeting",
-      content:
-        "All residents are required to attend the monthly hall meeting on March 25th at 7 PM in the common room.",
-      category: "Meeting",
-      date: "2024-03-20",
-      author: "Hall Provost",
-      isPinned: true,
-    },
-    {
-      id: 2,
-      title: "Water Supply Maintenance",
-      content:
-        "Water supply will be suspended for 2 hours (10 AM - 12 PM) on March 22nd due to tank cleaning.",
-      category: "Announcement",
-      date: "2024-03-19",
-      author: "Maintenance Dept",
+  const [newTitle, setNewTitle] = useState("");
+  const [newCategory, setNewCategory] = useState("Meeting");
+  const [newContent, setNewContent] = useState("");
+
+  const handleAddNotice = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle || !newContent) {
+      alert("Please fill all fields");
+      return;
+    }
+    addNotice({
+      title: newTitle,
+      category: newCategory,
+      priority: "Normal",
+      content: newContent,
+      author: currentUser?.name || "Manager",
       isPinned: false,
-    },
-  ]);
+    });
+    setNewTitle("");
+    setNewCategory("Meeting");
+    setNewContent("");
+    setShowAddModal(false);
+  };
 
   const filteredNotices = notices.filter((n) => {
     const matchesSearch =
@@ -215,7 +208,10 @@ const NoticeManagement: React.FC = () => {
                 <button className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all">
                   <Edit size={18} />
                 </button>
-                <button className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                <button
+                  onClick={() => deleteNotice(notice.id)}
+                  className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                >
                   <Trash2 size={18} />
                 </button>
               </div>
@@ -229,13 +225,15 @@ const NoticeManagement: React.FC = () => {
         onClose={() => setShowAddModal(false)}
         title="Create New Notice"
       >
-        <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+        <form className="space-y-4" onSubmit={handleAddNotice}>
           <div className="space-y-1">
             <label className="text-sm font-medium text-gray-700">
               Notice Title
             </label>
             <input
               type="text"
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
               className="w-full p-3 border border-gray-100 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
               placeholder="Enter title"
             />
@@ -244,16 +242,22 @@ const NoticeManagement: React.FC = () => {
             <label className="text-sm font-medium text-gray-700">
               Category
             </label>
-            <select className="w-full p-3 border border-gray-100 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none">
-              <option>Meeting</option>
-              <option>Announcement</option>
-              <option>Event</option>
-              <option>Urgent</option>
+            <select
+              value={newCategory}
+              onChange={(e) => setNewCategory(e.target.value)}
+              className="w-full p-3 border border-gray-100 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
+            >
+              <option value="Meeting">Meeting</option>
+              <option value="Announcement">Announcement</option>
+              <option value="Event">Event</option>
+              <option value="Urgent">Urgent</option>
             </select>
           </div>
           <div className="space-y-1">
             <label className="text-sm font-medium text-gray-700">Content</label>
             <textarea
+              value={newContent}
+              onChange={(e) => setNewContent(e.target.value)}
               className="w-full p-3 border border-gray-100 rounded-xl h-32 focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
               placeholder="Enter notice content"
             ></textarea>

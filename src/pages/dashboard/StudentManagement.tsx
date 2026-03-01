@@ -12,73 +12,15 @@ import {
   Home,
 } from "lucide-react";
 import Modal from "../../components/common/Modal";
-
-interface Student {
-  id: number;
-  name: string;
-  studentId: string;
-  photo: string;
-  department: string;
-  year: string;
-  room: string;
-  email: string;
-  phone: string;
-  guardianName: string;
-  guardianPhone: string;
-  address: string;
-  joinDate: string;
-  status: "Active" | "Inactive" | "Alumni";
-  paymentStatus: "Paid" | "Pending" | "Overdue";
-  attendance: number;
-}
+import { useMockData, Student } from "../../context/MockDataContext";
 
 const StudentManagement: React.FC = () => {
+  const { students } = useMockData();
   const [searchTerm] = useState("");
   const [filterDepartment] = useState("all");
   const [filterYear] = useState("all");
   const [filterStatus] = useState("all");
   const [showAddModal, setShowAddModal] = useState(false);
-
-  // Mock data
-  const students: Student[] = [
-    {
-      id: 1,
-      name: "John Doe",
-      studentId: "2024001",
-      photo: "https://i.pravatar.cc/150?img=1",
-      room: "101",
-      department: "Computer Science",
-      year: "3rd Year",
-      email: "john.doe@university.edu",
-      phone: "+880 1234-567890",
-      guardianName: "Jane Doe",
-      guardianPhone: "+880 1234-567891",
-      address: "123 University Road, Dhaka",
-      status: "Active",
-      joinDate: "2022-01-15",
-      paymentStatus: "Paid",
-      attendance: 95,
-    },
-    {
-      id: 2,
-      name: "John Doe",
-      studentId: "2024001",
-      photo: "https://i.pravatar.cc/150?img=1",
-      department: "CSE",
-      year: "3rd",
-      room: "A-502",
-      email: "john@example.com",
-      phone: "+880 1234567890",
-      guardianName: "Jane Doe",
-      guardianPhone: "+880 1987654321",
-      address: "123 Main St, Dhaka",
-      joinDate: "2022-01-15",
-      status: "Active",
-      paymentStatus: "Paid",
-      attendance: 92,
-    },
-    // Add more student data...
-  ];
 
   const filteredStudents = students.filter((student) => {
     const matchesSearch =

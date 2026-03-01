@@ -12,51 +12,15 @@ import {
   Trash2,
 } from "lucide-react";
 import Modal from "../../components/common/Modal";
-
-interface Room {
-  id: number;
-  number: string;
-  floor: string;
-  type: "Single" | "Double" | "Triple";
-  capacity: number;
-  occupied: number;
-  status: "Available" | "Occupied" | "Maintenance";
-  lastMaintenance: string;
-  monthlyRent: number;
-  facilities: string[];
-  occupants?: {
-    id: number;
-    name: string;
-    studentId: string;
-  }[];
-}
+import { useMockData } from "../../context/MockDataContext";
 
 const RoomManagement: React.FC = () => {
+  const { rooms } = useMockData();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterFloor, setFilterFloor] = useState("all");
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [showAddModal, setShowAddModal] = useState(false);
-
-  const rooms: Room[] = [
-    {
-      id: 1,
-      number: "101",
-      floor: "1st",
-      type: "Double",
-      capacity: 2,
-      occupied: 2,
-      status: "Occupied",
-      lastMaintenance: "2024-02-15",
-      monthlyRent: 5000,
-      facilities: ["AC", "Attached Bathroom", "Balcony"],
-      occupants: [
-        { id: 1, name: "John Doe", studentId: "2024001" },
-        { id: 2, name: "Jane Smith", studentId: "2024002" },
-      ],
-    },
-    // Add more room data...
-  ];
 
   const filteredRooms = rooms.filter((room) => {
     const matchesSearch = room.number
