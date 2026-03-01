@@ -6,12 +6,15 @@ import { useNavigate } from "react-router-dom";
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
   const { login } = useMockData();
   const navigate = useNavigate();
 
-  const handleLogin = () => {
+  const handleLogin = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setErrorMsg("");
     if (!email || !password) {
-      alert("Please enter both email and password.");
+      setErrorMsg("Please enter both email and password.");
       return;
     }
     const success = login(email, password);
@@ -24,7 +27,7 @@ const LoginPage = () => {
         navigate("/");
       }
     } else {
-      alert("Invalid credentials. Use manager@test.com or student@test.com");
+      setErrorMsg("Invalid credentials. Please check your email and password.");
     }
   };
 
@@ -34,7 +37,12 @@ const LoginPage = () => {
         <h1 className="text-3xl font-bold text-center mb-6 text-indigo-800">
           Login
         </h1>
-        <form>
+        {errorMsg && (
+          <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm font-medium border border-red-100">
+            {errorMsg}
+          </div>
+        )}
+        <form onSubmit={handleLogin}>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">
               Email
@@ -66,8 +74,7 @@ const LoginPage = () => {
             </div>
           </div>
           <button
-            type="button"
-            onClick={handleLogin}
+            type="submit"
             className="w-full py-2 bg-indigo-600 text-white font-bold rounded-lg shadow-md hover:bg-indigo-700 transition duration-200"
           >
             Login

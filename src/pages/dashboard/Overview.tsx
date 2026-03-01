@@ -1,15 +1,5 @@
-import React from "react";
+import { Users, Home, Bell, MessageSquare, ArrowUp } from "lucide-react";
 import {
-  Users,
-  Home,
-  Bell,
-  DollarSign,
-  ArrowUp,
-  ArrowDown,
-} from "lucide-react";
-import {
-  LineChart,
-  Line,
   BarChart,
   Bar,
   XAxis,
@@ -19,7 +9,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-import { Complaint } from "../../context/MockDataContext";
+import { Complaint, useMockData } from "../../context/MockDataContext";
 
 interface OverviewProps {
   stats: {
@@ -28,26 +18,38 @@ interface OverviewProps {
     availableRooms: number;
     pendingComplaints: number;
     totalNotices: number;
-    monthlyRevenue: number;
   };
   complaints: Complaint[];
 }
 
 const Overview: React.FC<OverviewProps> = ({ stats, complaints }) => {
-  // Sample data for charts
-  const revenueData = [
-    { month: "Jan", amount: 125000 },
-    { month: "Feb", amount: 130000 },
-    { month: "Mar", amount: 150000 },
-    // Add more months...
-  ];
+  const { students } = useMockData();
 
-  const occupancyData = [
-    { month: "Jan", occupied: 180, available: 70 },
-    { month: "Feb", occupied: 190, available: 60 },
-    { month: "Mar", occupied: 200, available: 50 },
-    // Add more months...
-  ];
+  const deptCount = students.reduce(
+    (acc, curr) => {
+      acc[curr.department] = (acc[curr.department] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
+
+  const deptData = Object.entries(deptCount).map(([name, count]) => ({
+    name,
+    count,
+  }));
+
+  const statusCount = complaints.reduce(
+    (acc, curr) => {
+      acc[curr.status] = (acc[curr.status] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
+
+  const statusData = Object.entries(statusCount).map(([name, count]) => ({
+    name,
+    count,
+  }));
 
   return (
     <div className="space-y-6">
@@ -62,7 +64,7 @@ const Overview: React.FC<OverviewProps> = ({ stats, complaints }) => {
               </h3>
               <span className="text-xs text-green-600 flex items-center mt-1">
                 <ArrowUp size={12} className="mr-1" />
-                12% increase
+                Active Capacity
               </span>
             </div>
             <div className="p-3 bg-indigo-100 rounded-lg">
@@ -74,22 +76,17 @@ const Overview: React.FC<OverviewProps> = ({ stats, complaints }) => {
         <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-sm text-gray-600">Room Occupancy</p>
+              <p className="text-sm text-gray-600">Total Rooms</p>
               <h3 className="text-2xl font-bold text-gray-800 mt-1">
-                {Math.round(
-                  (stats.occupiedRooms /
-                    (stats.occupiedRooms + stats.availableRooms)) *
-                    100,
-                )}
-                %
+                {stats.occupiedRooms + stats.availableRooms}
               </h3>
-              <span className="text-xs text-orange-600 flex items-center mt-1">
+              <span className="text-xs text-indigo-600 flex items-center mt-1">
                 <ArrowUp size={12} className="mr-1" />
-                5% increase
+                Active Capacity
               </span>
             </div>
-            <div className="p-3 bg-orange-100 rounded-lg">
-              <Home className="text-orange-600" size={24} />
+            <div className="p-3 bg-indigo-100 rounded-lg">
+              <Home className="text-indigo-600" size={24} />
             </div>
           </div>
         </div>
@@ -97,17 +94,17 @@ const Overview: React.FC<OverviewProps> = ({ stats, complaints }) => {
         <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-sm text-gray-600">Monthly Revenue</p>
+              <p className="text-sm text-gray-600">Active Notices</p>
               <h3 className="text-2xl font-bold text-gray-800 mt-1">
-                ৳{stats.monthlyRevenue.toLocaleString()}
+                {stats.totalNotices}
               </h3>
-              <span className="text-xs text-green-600 flex items-center mt-1">
+              <span className="text-xs text-orange-600 flex items-center mt-1">
                 <ArrowUp size={12} className="mr-1" />
-                8% increase
+                Current Term
               </span>
             </div>
-            <div className="p-3 bg-green-100 rounded-lg">
-              <DollarSign className="text-green-600" size={24} />
+            <div className="p-3 bg-orange-100 rounded-lg">
+              <MessageSquare className="text-orange-600" size={24} />
             </div>
           </div>
         </div>
@@ -120,7 +117,7 @@ const Overview: React.FC<OverviewProps> = ({ stats, complaints }) => {
                 {stats.pendingComplaints}
               </h3>
               <span className="text-xs text-red-600 flex items-center mt-1">
-                <ArrowDown size={12} className="mr-1" />3 new today
+                Action Required
               </span>
             </div>
             <div className="p-3 bg-red-100 rounded-lg">
@@ -132,50 +129,41 @@ const Overview: React.FC<OverviewProps> = ({ stats, complaints }) => {
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Revenue Trend */}
+        {/* Students by Department */}
         <div className="bg-white rounded-xl shadow-md p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-gray-800">
-              Revenue Trend
+              Students by Department
             </h3>
-            <select className="text-sm border rounded-lg px-2 py-1">
-              <option>Last 6 months</option>
-              <option>Last year</option>
-            </select>
           </div>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={revenueData}>
+              <BarChart data={deptData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
+                <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
-                <Line type="monotone" dataKey="amount" stroke="#4F46E5" />
-              </LineChart>
+                <Bar dataKey="count" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+              </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Room Occupancy Trend */}
+        {/* Complaints By Status */}
         <div className="bg-white rounded-xl shadow-md p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-gray-800">
-              Room Occupancy
+              Complaints by Status
             </h3>
-            <select className="text-sm border rounded-lg px-2 py-1">
-              <option>Last 6 months</option>
-              <option>Last year</option>
-            </select>
           </div>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={occupancyData}>
+              <BarChart data={statusData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
+                <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="occupied" fill="#4F46E5" />
-                <Bar dataKey="available" fill="#E5E7EB" />
+                <Bar dataKey="count" fill="#F59E0B" />
               </BarChart>
             </ResponsiveContainer>
           </div>

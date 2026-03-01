@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   AlertCircle,
   Search,
@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useMockData } from "../../context/MockDataContext";
 import Modal from "../../components/common/Modal";
+import Pagination from "../../components/common/Pagination";
 
 const ComplaintManagement: React.FC = () => {
   const { complaints, updateComplaintStatus, addComplaint, currentUser } =
@@ -23,6 +24,14 @@ const ComplaintManagement: React.FC = () => {
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterPriority, setFilterPriority] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
+
+  const ITEMS_PER_PAGE = 5;
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterCategory, filterStatus, filterPriority, sortBy]);
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [newTitle, setNewTitle] = useState("");
@@ -94,18 +103,39 @@ const ComplaintManagement: React.FC = () => {
     }
   };
 
-  const filteredComplaints = complaints.filter((complaint) => {
-    const matchesSearch = complaint.title
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    const matchesCategory =
-      filterCategory === "all" || complaint.category === filterCategory;
-    const matchesStatus =
-      filterStatus === "all" || complaint.status === filterStatus;
-    const matchesPriority =
-      filterPriority === "all" || complaint.priority === filterPriority;
-    return matchesSearch && matchesCategory && matchesStatus && matchesPriority;
-  });
+  const filteredComplaints = complaints
+    .filter((complaint) => {
+      const matchesSearch = complaint.title
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      const matchesCategory =
+        filterCategory === "all" || complaint.category === filterCategory;
+      const matchesStatus =
+        filterStatus === "all" || complaint.status === filterStatus;
+      const matchesPriority =
+        filterPriority === "all" || complaint.priority === filterPriority;
+      return (
+        matchesSearch && matchesCategory && matchesStatus && matchesPriority
+      );
+    })
+    .sort((a, b) => {
+      if (sortBy === "oldest")
+        return new Date(a.date).getTime() - new Date(b.date).getTime();
+      if (sortBy === "priority") {
+        const p: any = { high: 3, medium: 2, low: 1 };
+        return (
+          (p[b.priority.toLowerCase()] || 0) -
+          (p[a.priority.toLowerCase()] || 0)
+        );
+      }
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    });
+
+  const totalPages = Math.ceil(filteredComplaints.length / ITEMS_PER_PAGE);
+  const paginatedComplaints = filteredComplaints.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  );
 
   return (
     <div className="space-y-6">
@@ -242,13 +272,22 @@ const ComplaintManagement: React.FC = () => {
               <option value="in-progress">In Progress</option>
               <option value="resolved">Resolved</option>
             </select>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white"
+            >
+              <option value="newest">Sort by: Newest</option>
+              <option value="oldest">Sort by: Oldest</option>
+              <option value="priority">Sort by: Priority</option>
+            </select>
           </div>
         </div>
       </div>
 
       {/* Complaints List */}
       <div className="space-y-4">
-        {filteredComplaints.map((complaint) => {
+        {paginatedComplaints.map((complaint) => {
           const CategoryIcon = getCategoryIcon(complaint.category);
           return (
             <div
@@ -324,6 +363,12 @@ const ComplaintManagement: React.FC = () => {
           );
         })}
       </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
 
       <Modal
         isOpen={showAddModal}

@@ -112,13 +112,13 @@ const Footer = () => {
         </div>
 
         <div className="mt-12 pt-8 border-t border-gray-800">
-          <div className="flex flex-col md:flex-row justify-between items-center">
+          <div className="flex flex-col md:flex-row justify-between items-center text-center md:text-left">
             <p className="text-sm">
               © {new Date().getFullYear()} CUET Hall Management System. All
               rights reserved.
             </p>
             <div className="mt-4 md:mt-0">
-              <ul className="flex space-x-6">
+              <ul className="flex flex-wrap justify-center gap-4 md:space-x-6 md:gap-0">
                 <li>
                   <a
                     href="#"

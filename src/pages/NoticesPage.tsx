@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import NoticeItem from "../components/notices/NoticeItem";
 import { useMockData } from "../context/MockDataContext";
+import Pagination from "../components/common/Pagination";
 
 const NoticesPage = () => {
   const { notices } = useMockData();
@@ -9,21 +10,30 @@ const NoticesPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const noticesPerPage = 5;
 
-  const filteredNotices = notices.filter((notice) => {
-    return (
-      (filter === "all" || notice.type === filter) &&
-      notice.title.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  });
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filter]);
 
+  const filteredNotices = notices
+    .filter((notice) => {
+      return (
+        (filter === "all" || notice.category === filter) &&
+        notice.title.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    })
+    .sort((a, b) => {
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    });
+
+  const totalPages = Math.ceil(filteredNotices.length / noticesPerPage);
   const indexOfLastNotice = currentPage * noticesPerPage;
   const indexOfFirstNotice = indexOfLastNotice - noticesPerPage;
   const currentNotices = filteredNotices.slice(
     indexOfFirstNotice,
     indexOfLastNotice,
   );
-
-  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 to-purple-100 p-6">
@@ -63,25 +73,11 @@ const NoticesPage = () => {
           />
         ))}
       </div>
-      <div className="flex justify-center mt-4">
-        {Array.from(
-          { length: Math.ceil(filteredNotices.length / noticesPerPage) },
-          (_, i) => (
-            <button
-              key={i}
-              onClick={() => paginate(i + 1)}
-              className={`px-3 py-1 mx-1 rounded-md ${
-                currentPage === i + 1
-                  ? "bg-indigo-600 text-white"
-                  : "bg-white text-indigo-600"
-              }`}
-              aria-label={`Go to page ${i + 1}`}
-            >
-              {i + 1}
-            </button>
-          ),
-        )}
-      </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
     </div>
   );
 };

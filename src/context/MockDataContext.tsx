@@ -6,6 +6,7 @@ export interface User {
   email: string;
   name: string;
   role: "student" | "manager";
+  password?: string;
 }
 
 export interface Room {
@@ -17,7 +18,6 @@ export interface Room {
   occupied: number;
   status: "Available" | "Occupied" | "Maintenance";
   lastMaintenance: string;
-  monthlyRent: number;
   facilities: string[];
   occupants?: {
     id: number;
@@ -114,11 +114,159 @@ interface MockDataContextType {
   addPayment: (payment: Omit<Payment, "id" | "status" | "date">) => void;
   addNotice: (notice: Omit<Notice, "id" | "date">) => void;
   deleteNotice: (id: number) => void;
+  toggleNoticePin: (id: number) => void;
   addRoom: (room: Omit<Room, "id">) => void;
   addStudent: (student: Omit<Student, "id">) => void;
+  appliedRooms: string[];
+  applyForRoom: (roomNumber: string) => void;
 }
 
 const MockDataContext = createContext<MockDataContextType | null>(null);
+
+// --- BULK MOCK DATA GENERATORS ---
+const generateRooms = (): Room[] => {
+  const rooms: Room[] = [];
+  let idCounter = 1;
+  ["1st", "2nd", "3rd", "4th", "5th"].forEach((floor) => {
+    for (let i = 1; i <= 20; i++) {
+      const capacity = Math.random() > 0.5 ? 2 : Math.random() > 0.5 ? 1 : 3;
+      const occupied = Math.floor(Math.random() * (capacity + 1));
+      const type =
+        capacity === 1 ? "Single" : capacity === 2 ? "Double" : "Triple";
+      rooms.push({
+        id: idCounter++,
+        number: `${floor.charAt(0)}${i.toString().padStart(2, "0")}`,
+        floor: floor,
+        type: type as "Single" | "Double" | "Triple",
+        capacity,
+        occupied,
+        status:
+          occupied === capacity
+            ? "Occupied"
+            : Math.random() > 0.1
+              ? "Available"
+              : "Maintenance",
+        lastMaintenance: "2024-02-15",
+        facilities: ["AC", "Attached Bathroom", "Balcony"],
+      });
+    }
+  });
+  return rooms;
+};
+
+const generateStudents = (): Student[] => {
+  const students: Student[] = [];
+  const depts = [
+    "Computer Science",
+    "Electrical Eng",
+    "Mechanical Eng",
+    "Civil Eng",
+    "BBA",
+  ];
+  const years = ["1st Year", "2nd Year", "3rd Year", "4th Year", "Masters"];
+  const statuses = ["Active", "Active", "Active", "Inactive", "Alumni"];
+  for (let i = 1; i <= 250; i++) {
+    students.push({
+      id: i,
+      name: `Student ${i}`,
+      studentId: `2024${i.toString().padStart(3, "0")}`,
+      photo: `https://ui-avatars.com/api/?name=Student+${i}&background=random`,
+      room: `${Math.floor(Math.random() * 5 + 1)}${Math.floor(
+        Math.random() * 20 + 1,
+      )
+        .toString()
+        .padStart(2, "0")}`,
+      department: depts[Math.floor(Math.random() * depts.length)],
+      year: years[Math.floor(Math.random() * years.length)],
+      email: `student${i}@university.edu`,
+      phone: `+880 1234-${Math.floor(Math.random() * 900000 + 100000)}`,
+      guardianName: `Guardian ${i}`,
+      guardianPhone: `+880 1234-${Math.floor(Math.random() * 900000 + 100000)}`,
+      address: `123 University Road, Dhaka`,
+      status: statuses[Math.floor(Math.random() * statuses.length)] as any,
+      joinDate: "2022-01-15",
+      paymentStatus:
+        Math.random() > 0.8
+          ? Math.random() > 0.5
+            ? "Pending"
+            : "Overdue"
+          : "Paid",
+      attendance: Math.floor(Math.random() * 40 + 60),
+    });
+  }
+  return students;
+};
+
+const generateComplaints = (): Complaint[] => {
+  const complaints: Complaint[] = [];
+  const categories = ["Maintenance", "Facility", "Security", "Other"];
+  const statuses = ["pending", "in-progress", "resolved"];
+  const priorities = ["high", "medium", "low"];
+  for (let i = 1; i <= 50; i++) {
+    complaints.push({
+      id: i,
+      studentName: `Student ${(i % 250) + 1}`,
+      room: `A-${Math.floor(Math.random() * 500 + 100)}`,
+      roomNumber: `${Math.floor(Math.random() * 5 + 1)}0${Math.floor(Math.random() * 9 + 1)}`,
+      title: `Issue Report #${i}`,
+      category: categories[Math.floor(Math.random() * categories.length)],
+      description: "Detailed description of the complaint goes here.",
+      status: statuses[Math.floor(Math.random() * statuses.length)] as any,
+      priority: priorities[Math.floor(Math.random() * priorities.length)],
+      date: `2024-03-${Math.floor(Math.random() * 28 + 1)
+        .toString()
+        .padStart(2, "0")}`,
+      createdAt: `2024-03-${Math.floor(Math.random() * 28 + 1)
+        .toString()
+        .padStart(2, "0")}`,
+      comments: Math.floor(Math.random() * 5),
+    });
+  }
+  return complaints;
+};
+
+const generatePayments = (): Payment[] => {
+  const payments: Payment[] = [];
+  for (let i = 1; i <= 150; i++) {
+    payments.push({
+      id: i,
+      studentName: `Student ${i}`,
+      studentId: `2024${i.toString().padStart(3, "0")}`,
+      amount: Math.random() > 0.5 ? "5000" : "3500",
+      purpose: Math.random() > 0.5 ? "Hall Fee" : "Dining Fee",
+      date: `2024-03-${Math.floor(Math.random() * 28 + 1)
+        .toString()
+        .padStart(2, "0")}`,
+      method: Math.random() > 0.5 ? "bKash" : "Card",
+      status: "Completed",
+    });
+  }
+  return payments;
+};
+
+const generateNotices = (): Notice[] => {
+  const notices: Notice[] = [];
+  for (let i = 1; i <= 20; i++) {
+    notices.push({
+      id: i,
+      title: `Official Notice #${i}`,
+      content:
+        "This is a detailed content string for the notice. Please read carefully and act accordingly.",
+      description: "A short preview description of the notice content.",
+      category:
+        i % 3 === 0 ? "Meeting" : i % 2 === 0 ? "Event" : "Announcement",
+      type: "updates",
+      priority: i % 5 === 0 ? "High" : "Normal",
+      date: `2024-03-${Math.floor(Math.random() * 28 + 1)
+        .toString()
+        .padStart(2, "0")}`,
+      author: "Manager",
+      isPinned: i <= 3,
+    });
+  }
+  return notices;
+};
+// ---------------------------------
 
 export const useMockData = () => {
   const context = useContext(MockDataContext);
@@ -132,144 +280,38 @@ export const MockDataProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [appliedRooms, setAppliedRooms] = useState<string[]>([]);
 
   // Initial Seed Data
   const [users, setUsers] = useState<User[]>([
-    { id: 1, email: "manager@test.com", name: "Hall Manager", role: "manager" },
-    { id: 2, email: "student@test.com", name: "John Doe", role: "student" },
-  ]);
-
-  const [rooms, setRooms] = useState<Room[]>([
     {
       id: 1,
-      number: "101",
-      floor: "1st",
-      type: "Double",
-      capacity: 2,
-      occupied: 2,
-      status: "Occupied",
-      lastMaintenance: "2024-02-15",
-      monthlyRent: 5000,
-      facilities: ["AC", "Attached Bathroom", "Balcony"],
-      occupants: [
-        { id: 1, name: "John Doe", studentId: "2024001" },
-        { id: 2, name: "Jane Smith", studentId: "2024002" },
-      ],
+      email: "manager@test.com",
+      name: "Hall Manager",
+      role: "manager",
+      password: "password123",
     },
-  ]);
-
-  const [students, setStudents] = useState<Student[]>([
     {
-      id: 1,
+      id: 2,
+      email: "student@test.com",
       name: "John Doe",
-      studentId: "2024001",
-      photo: "https://i.pravatar.cc/150?img=1",
-      room: "101",
-      department: "Computer Science",
-      year: "3rd Year",
-      email: "john.doe@university.edu",
-      phone: "+880 1234-567890",
-      guardianName: "Jane Doe",
-      guardianPhone: "+880 1234-567891",
-      address: "123 University Road, Dhaka",
-      status: "Active",
-      joinDate: "2022-01-15",
-      paymentStatus: "Paid",
-      attendance: 95,
+      role: "student",
+      password: "password123",
     },
   ]);
 
-  const [complaints, setComplaints] = useState<Complaint[]>([
-    {
-      id: 1,
-      studentName: "John Doe",
-      room: "A-201",
-      roomNumber: "A-201",
-      title: "Leaking Pipe",
-      category: "Maintenance",
-      description: "Water leaking from the sink",
-      status: "pending",
-      priority: "high",
-      date: "2024-03-20",
-      createdAt: "2024-03-20",
-      comments: 3,
-    },
-    {
-      id: 2,
-      studentName: "Jane Smith",
-      room: "B-105",
-      roomNumber: "B-105",
-      title: "Broken Window",
-      category: "Facility",
-      description: "Window latch is broken",
-      status: "in-progress",
-      priority: "medium",
-      date: "2024-03-19",
-      createdAt: "2024-03-19",
-      comments: 1,
-    },
-  ]);
+  const [rooms, setRooms] = useState<Room[]>(generateRooms());
+  const [students, setStudents] = useState<Student[]>(generateStudents());
+  const [complaints, setComplaints] =
+    useState<Complaint[]>(generateComplaints());
+  const [payments, setPayments] = useState<Payment[]>(generatePayments());
+  const [notices, setNotices] = useState<Notice[]>(generateNotices());
 
-  const [payments, setPayments] = useState<Payment[]>([
-    {
-      id: 1,
-      studentName: "John Doe",
-      studentId: "2024001",
-      amount: "5000",
-      purpose: "Hall Fee",
-      date: "2024-03-20",
-      method: "bKash",
-      status: "Completed",
-    },
-    {
-      id: 2,
-      studentName: "Jane Smith",
-      studentId: "2024002",
-      amount: "3500",
-      purpose: "Dining Fee",
-      date: "2024-03-19",
-      method: "Card",
-      status: "Completed",
-    },
-  ]);
-
-  const [notices, setNotices] = useState<Notice[]>([
-    {
-      id: 1,
-      title: "Monthly Hall Meeting",
-      content:
-        "All residents are required to attend the monthly hall meeting on March 25th at 7 PM in the common room.",
-      description:
-        "All residents are required to attend the monthly hall meeting on March 25th at 7 PM in the common room.",
-      category: "Meeting",
-      type: "updates",
-      priority: "High",
-      date: "2024-03-20",
-      author: "Hall Provost",
-      isPinned: true,
-    },
-    {
-      id: 2,
-      title: "Water Supply Maintenance",
-      content:
-        "Water supply will be suspended for 2 hours (10 AM - 12 PM) on March 22nd due to tank cleaning.",
-      description:
-        "Water supply will be suspended for 2 hours (10 AM - 12 PM) on March 22nd due to tank cleaning.",
-      category: "Announcement",
-      type: "maintenance",
-      priority: "High",
-      date: "2024-03-19",
-      author: "Maintenance Dept",
-      isPinned: false,
-    },
-  ]);
-
-  // Auth Actions
   const login = (email: string, pass: string) => {
     // Highly simplified mock check
     const user = users.find((u) => u.email === email);
-    if (user && pass.length > 0) {
-      // any pass works for now
+    const validPassword = user?.password || "password123";
+    if (user && pass === validPassword) {
       setCurrentUser(user);
       return true;
     }
@@ -286,6 +328,7 @@ export const MockDataProvider: React.FC<{ children: ReactNode }> = ({
       email,
       name: email.split("@")[0],
       role,
+      password: _pass,
     };
     setUsers((prev) => [...prev, newUser]);
     setCurrentUser(newUser); // log them in automatically
@@ -343,12 +386,24 @@ export const MockDataProvider: React.FC<{ children: ReactNode }> = ({
     setNotices((prev) => prev.filter((n) => n.id !== id));
   };
 
+  const toggleNoticePin = (id: number) => {
+    setNotices((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, isPinned: !n.isPinned } : n)),
+    );
+  };
+
   const addRoom = (r: Omit<Room, "id">) => {
     setRooms((prev) => [{ id: Date.now(), ...r }, ...prev]);
   };
 
   const addStudent = (s: Omit<Student, "id">) => {
     setStudents((prev) => [{ id: Date.now(), ...s }, ...prev]);
+  };
+
+  const applyForRoom = (roomNumber: string) => {
+    if (!appliedRooms.includes(roomNumber)) {
+      setAppliedRooms((prev) => [...prev, roomNumber]);
+    }
   };
 
   return (
@@ -361,6 +416,7 @@ export const MockDataProvider: React.FC<{ children: ReactNode }> = ({
         complaints,
         payments,
         notices,
+        appliedRooms,
         login,
         register,
         logout,
@@ -369,8 +425,10 @@ export const MockDataProvider: React.FC<{ children: ReactNode }> = ({
         addPayment,
         addNotice,
         deleteNotice,
+        toggleNoticePin,
         addRoom,
         addStudent,
+        applyForRoom,
       }}
     >
       {children}

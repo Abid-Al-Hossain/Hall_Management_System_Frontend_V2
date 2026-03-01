@@ -17,6 +17,7 @@ import StudentManagement from "./dashboard/StudentManagement";
 import NoticeManagement from "./dashboard/NoticeManagement";
 import ComplaintManagement from "./dashboard/ComplaintManagement";
 import Overview from "./dashboard/Overview";
+import SettingsSub from "./dashboard/SettingsSub";
 import { useMockData } from "../context/MockDataContext";
 
 type DashboardSection =
@@ -34,11 +35,15 @@ interface NavigationItem {
 }
 
 const ManagerDashboard: React.FC = () => {
-  const [selectedSection, setSelectedSection] =
-    useState<DashboardSection>("overview");
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const location = useLocation();
-  const { students, rooms, notices, complaints } = useMockData();
+  const [selectedSection, setSelectedSection] = useState<DashboardSection>(
+    () => {
+      return (location.state?.activeSection as DashboardSection) || "overview";
+    },
+  );
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const { students, rooms, complaints, notices } = useMockData();
 
   useEffect(() => {
     const path = location.pathname.split("/").pop();
@@ -71,10 +76,9 @@ const ManagerDashboard: React.FC = () => {
     occupiedRooms: rooms.filter((r) => r.status === "Occupied").length,
     availableRooms: rooms.filter((r) => r.status === "Available").length,
     pendingComplaints: complaints.filter(
-      (c) => c.status.toLowerCase() === "pending",
+      (c) => c.status.toLowerCase() !== "resolved",
     ).length,
     totalNotices: notices.length,
-    monthlyRevenue: 150000,
   };
 
   const renderSection = () => {
@@ -98,16 +102,7 @@ const ManagerDashboard: React.FC = () => {
               case "complaints":
                 return <ComplaintManagement />;
               case "settings":
-                return (
-                  <div className="p-6">
-                    <h2 className="text-2xl font-bold text-gray-800">
-                      Settings
-                    </h2>
-                    <p className="mt-4 text-gray-600">
-                      Settings are coming soon...
-                    </p>
-                  </div>
-                );
+                return <SettingsSub />;
               default:
                 return (
                   <div className="p-6">

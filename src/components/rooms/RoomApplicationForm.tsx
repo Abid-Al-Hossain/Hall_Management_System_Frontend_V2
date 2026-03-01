@@ -1,18 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import { useMockData } from "../../context/MockDataContext";
 
 interface RoomApplicationFormProps {
   roomNumber: string;
   onClose: () => void;
 }
 
-const RoomApplicationForm: React.FC<RoomApplicationFormProps> = ({ roomNumber, onClose }) => {
-  const [studentName, setStudentName] = useState('');
-  const [studentId, setStudentId] = useState('');
+const RoomApplicationForm: React.FC<RoomApplicationFormProps> = ({
+  roomNumber,
+  onClose,
+}) => {
+  const { addComplaint, currentUser, applyForRoom } = useMockData();
+  const [studentName, setStudentName] = useState(currentUser?.name || "");
+  const [studentId, setStudentId] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Implement form submission logic here
-    alert(`Application submitted for Room ${roomNumber} by ${studentName} (ID: ${studentId})`);
+    addComplaint({
+      title: `Room Application: ${roomNumber}`,
+      description: `Student ${studentName} (ID: ${studentId}) is applying for room ${roomNumber}.`,
+      category: "Maintenance", // Routing to maintenance temporarily for manager visibility
+      priority: "Medium",
+      studentName: studentName,
+      room: "N/A",
+    });
+    alert(
+      `Application successfully submitted for Room ${roomNumber}! The Manager can view this in the Pending Requests / Complaint Box.`,
+    );
+    applyForRoom(roomNumber);
     onClose();
   };
 
@@ -22,7 +37,9 @@ const RoomApplicationForm: React.FC<RoomApplicationFormProps> = ({ roomNumber, o
         <h2 className="text-2xl font-bold mb-4">Apply for Room {roomNumber}</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Student Name</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Student Name
+            </label>
             <input
               type="text"
               value={studentName}
@@ -32,7 +49,9 @@ const RoomApplicationForm: React.FC<RoomApplicationFormProps> = ({ roomNumber, o
             />
           </div>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Student ID</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Student ID
+            </label>
             <input
               type="text"
               value={studentId}
@@ -62,4 +81,4 @@ const RoomApplicationForm: React.FC<RoomApplicationFormProps> = ({ roomNumber, o
   );
 };
 
-export default RoomApplicationForm; 
+export default RoomApplicationForm;

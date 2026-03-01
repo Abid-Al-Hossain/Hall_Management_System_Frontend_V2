@@ -21,102 +21,113 @@ import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import PageTransition from "./components/layout/PageTransition";
 import { MockDataProvider } from "./context/MockDataContext";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 function AnimatedRoutes() {
   const location = useLocation();
 
   return (
-    <MockDataProvider>
-      <AnimatePresence mode="wait">
-        <Routes location={location} key={location.pathname}>
-          <Route
-            path="/"
-            element={
-              <PageTransition>
-                <Hero />
-                <About />
-                <Features />
-              </PageTransition>
-            }
-          />
-          <Route
-            path="/manager"
-            element={
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route
+          path="/"
+          element={
+            <PageTransition>
+              <Hero />
+              <About />
+              <Features />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/manager"
+          element={
+            <ProtectedRoute allowedRole="manager">
               <PageTransition>
                 <ManagerDashboard />
               </PageTransition>
-            }
-          />
-          <Route
-            path="/rooms"
-            element={
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/rooms"
+          element={
+            <ProtectedRoute allowedRole="student">
               <PageTransition>
                 <RoomsPage />
               </PageTransition>
-            }
-          />
-          <Route
-            path="/complaints"
-            element={
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/complaints"
+          element={
+            <ProtectedRoute allowedRole="student">
               <PageTransition>
                 <ComplaintsPage />
               </PageTransition>
-            }
-          />
-          <Route
-            path="/notices"
-            element={
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/notices"
+          element={
+            <ProtectedRoute allowedRole="student">
               <PageTransition>
                 <NoticesPage />
               </PageTransition>
-            }
-          />
-          <Route
-            path="/payment"
-            element={
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/payment"
+          element={
+            <ProtectedRoute allowedRole="student">
               <PageTransition>
                 <PaymentPage />
               </PageTransition>
-            }
-          />
-          <Route
-            path="/login"
-            element={
-              <PageTransition>
-                <LoginPage />
-              </PageTransition>
-            }
-          />
-          <Route
-            path="/signup"
-            element={
-              <PageTransition>
-                <SignupPage />
-              </PageTransition>
-            }
-          />
-        </Routes>
-      </AnimatePresence>
-    </MockDataProvider>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <PageTransition>
+              <LoginPage />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <PageTransition>
+              <SignupPage />
+            </PageTransition>
+          }
+        />
+      </Routes>
+    </AnimatePresence>
   );
 }
 
 function App() {
   return (
-    <Router>
-      <div className="min-h-screen relative overflow-hidden">
-        <div className="absolute inset-0 z-0 bg-gradient-to-br from-indigo-100 via-indigo-50 to-pink-100 animate-gradient-blur" />
+    <MockDataProvider>
+      <Router>
+        <div className="min-h-screen relative overflow-hidden">
+          <div className="absolute inset-0 z-0 bg-gradient-to-br from-indigo-100 via-indigo-50 to-pink-100 animate-gradient-blur" />
 
-        <div className="relative z-10 flex flex-col min-h-screen text-gray-800">
-          <Navbar />
-          <main className="flex-grow">
-            <AnimatedRoutes />
-          </main>
-          <ChatWidget />
-          <Footer />
+          <div className="relative z-10 flex flex-col min-h-screen text-gray-800">
+            <Navbar />
+            <main className="flex-grow">
+              <AnimatedRoutes />
+            </main>
+            <ChatWidget />
+            <Footer />
+          </div>
         </div>
-      </div>
-    </Router>
+      </Router>
+    </MockDataProvider>
   );
 }
 

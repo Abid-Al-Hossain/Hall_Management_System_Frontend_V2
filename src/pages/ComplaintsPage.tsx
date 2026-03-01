@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, AlertCircle } from "lucide-react";
 import { useMockData, Complaint } from "../context/MockDataContext";
+import Pagination from "../components/common/Pagination";
 
 const ComplaintsPage: React.FC = () => {
   const { complaints, addComplaint, currentUser } = useMockData();
@@ -22,6 +23,19 @@ const ComplaintsPage: React.FC = () => {
       selectedCategory === "all" || complaint.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
+
+  const ITEMS_PER_PAGE = 4;
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCategory]);
+
+  const totalPages = Math.ceil(filteredComplaints.length / ITEMS_PER_PAGE);
+  const paginatedComplaints = filteredComplaints.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,9 +146,33 @@ const ComplaintsPage: React.FC = () => {
                       >
                         <option value="Low">Low</option>
                         <option value="Medium">Medium</option>
-                        <option value="High">High</option>
                       </select>
                     </motion.div>
+                    <motion.div variants={itemVariants} className="space-y-1">
+                      <label className="text-sm font-medium text-gray-700">
+                        Room Number / Location
+                      </label>
+                      <input
+                        type="text"
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
+                        className="w-full p-3 bg-gray-50 border rounded-xl"
+                        placeholder="e.g. Room 101 or North Wing"
+                      />
+                    </motion.div>
+
+                    <motion.div variants={itemVariants} className="space-y-1">
+                      <label className="text-sm font-medium text-gray-700">
+                        Detailed Description (Optional)
+                      </label>
+                      <textarea
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        className="w-full p-3 bg-gray-50 border rounded-xl min-h-[100px]"
+                        placeholder="Describe the issue in detail..."
+                      />
+                    </motion.div>
+
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
@@ -172,7 +210,7 @@ const ComplaintsPage: React.FC = () => {
             animate="visible"
             className="space-y-4"
           >
-            {filteredComplaints.map((c) => (
+            {paginatedComplaints.map((c) => (
               <motion.div
                 key={c.id}
                 variants={itemVariants}
@@ -202,6 +240,11 @@ const ComplaintsPage: React.FC = () => {
               </motion.div>
             ))}
           </motion.div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </div>
     </div>

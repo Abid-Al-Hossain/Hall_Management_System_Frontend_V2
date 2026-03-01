@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Bell,
@@ -11,13 +11,23 @@ import {
   Trash2,
 } from "lucide-react";
 import Modal from "../../components/common/Modal";
+import Pagination from "../../components/common/Pagination";
 import { useMockData, Notice } from "../../context/MockDataContext";
 
 const NoticeManagement: React.FC = () => {
-  const { notices, addNotice, deleteNotice, currentUser } = useMockData();
+  const { notices, addNotice, deleteNotice, toggleNoticePin, currentUser } =
+    useMockData();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
   const [showAddModal, setShowAddModal] = useState(false);
+
+  const ITEMS_PER_PAGE = 5;
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterCategory, sortBy]);
 
   const [newTitle, setNewTitle] = useState("");
   const [newCategory, setNewCategory] = useState("Meeting");
@@ -43,14 +53,29 @@ const NoticeManagement: React.FC = () => {
     setShowAddModal(false);
   };
 
-  const filteredNotices = notices.filter((n) => {
-    const matchesSearch =
-      n.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      n.content.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory =
-      filterCategory === "all" || n.category === filterCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const filteredNotices = notices
+    .filter((n) => {
+      const matchesSearch =
+        n.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        n.content.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory =
+        filterCategory === "all" || n.category === filterCategory;
+      return matchesSearch && matchesCategory;
+    })
+    .sort((a, b) => {
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+      // Secondary sort by date
+      if (sortBy === "oldest")
+        return new Date(a.date).getTime() - new Date(b.date).getTime();
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    });
+
+  const totalPages = Math.ceil(filteredNotices.length / ITEMS_PER_PAGE);
+  const paginatedNotices = filteredNotices.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  );
 
   const getCategoryColor = (category: Notice["category"]) => {
     switch (category) {
@@ -162,6 +187,14 @@ const NoticeManagement: React.FC = () => {
           <option value="Event">Event</option>
           <option value="Urgent">Urgent</option>
         </select>
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          className="px-4 py-2 border border-gray-100 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
+        >
+          <option value="newest">Sort by: Newest First</option>
+          <option value="oldest">Sort by: Oldest First</option>
+        </select>
       </div>
 
       <motion.div
@@ -170,7 +203,7 @@ const NoticeManagement: React.FC = () => {
         animate="visible"
         className="space-y-4"
       >
-        {filteredNotices.map((notice) => (
+        {paginatedNotices.map((notice) => (
           <motion.div
             key={notice.id}
             variants={itemVariants}
@@ -180,9 +213,19 @@ const NoticeManagement: React.FC = () => {
             <div className="flex justify-between items-start">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  {notice.isPinned && (
-                    <Pin size={16} className="text-indigo-500" />
-                  )}
+                  <button
+                    onClick={() => toggleNoticePin(notice.id)}
+                    className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <Pin
+                      size={16}
+                      className={
+                        notice.isPinned
+                          ? "text-indigo-500 fill-indigo-500"
+                          : "text-gray-400"
+                      }
+                    />
+                  </button>
                   <h3 className="text-lg font-bold text-gray-800">
                     {notice.title}
                   </h3>
@@ -219,6 +262,12 @@ const NoticeManagement: React.FC = () => {
           </motion.div>
         ))}
       </motion.div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
 
       <Modal
         isOpen={showAddModal}

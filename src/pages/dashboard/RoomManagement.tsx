@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Building,
@@ -12,26 +12,84 @@ import {
   Trash2,
 } from "lucide-react";
 import Modal from "../../components/common/Modal";
+import Pagination from "../../components/common/Pagination";
 import { useMockData } from "../../context/MockDataContext";
 
 const RoomManagement: React.FC = () => {
-  const { rooms } = useMockData();
+  const { rooms, addRoom } = useMockData();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterFloor, setFilterFloor] = useState("all");
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [sortBy, setSortBy] = useState("number");
   const [showAddModal, setShowAddModal] = useState(false);
 
-  const filteredRooms = rooms.filter((room) => {
-    const matchesSearch = room.number
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    const matchesFloor = filterFloor === "all" || room.floor === filterFloor;
-    const matchesType = filterType === "all" || room.type === filterType;
-    const matchesStatus =
-      filterStatus === "all" || room.status === filterStatus;
-    return matchesSearch && matchesFloor && matchesType && matchesStatus;
-  });
+  const ITEMS_PER_PAGE = 8;
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterFloor, filterType, filterStatus, sortBy]);
+
+  const [newRoomNumber, setNewRoomNumber] = useState("");
+  const [newRoomFloor, setNewRoomFloor] = useState("1st");
+  const [newRoomType, setNewRoomType] = useState("Single");
+  const [newRoomFacilities, setNewRoomFacilities] = useState("");
+
+  const handleAddRoom = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newRoomNumber) {
+      alert("Please fill required fields (Number)");
+      return;
+    }
+    const capacity =
+      newRoomType === "Single" ? 1 : newRoomType === "Double" ? 2 : 3;
+    addRoom({
+      number: newRoomNumber,
+      floor: newRoomFloor,
+      type: newRoomType as "Single" | "Double" | "Triple",
+      capacity,
+      occupied: 0,
+      status: "Available",
+      lastMaintenance: new Date().toISOString().split("T")[0],
+      facilities: newRoomFacilities
+        .split(",")
+        .map((f) => f.trim())
+        .filter(Boolean),
+    });
+    setNewRoomNumber("");
+    setNewRoomFloor("1st");
+    setNewRoomType("Single");
+    setNewRoomFacilities("");
+    setShowAddModal(false);
+  };
+
+  const filteredRooms = rooms
+    .filter((room) => {
+      const matchesSearch = room.number
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      const matchesFloor = filterFloor === "all" || room.floor === filterFloor;
+      const matchesType = filterType === "all" || room.type === filterType;
+      const matchesStatus =
+        filterStatus === "all" || room.status === filterStatus;
+      return matchesSearch && matchesFloor && matchesType && matchesStatus;
+    })
+    .sort((a, b) => {
+      if (sortBy === "capacity") return b.capacity - a.capacity;
+      if (sortBy === "status") {
+        if (a.status === "Available" && b.status !== "Available") return -1;
+        if (a.status !== "Available" && b.status === "Available") return 1;
+        return a.number.localeCompare(b.number);
+      }
+      return a.number.localeCompare(b.number);
+    });
+
+  const totalPages = Math.ceil(filteredRooms.length / ITEMS_PER_PAGE);
+  const paginatedRooms = filteredRooms.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  );
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -183,6 +241,15 @@ const RoomManagement: React.FC = () => {
                 </option>
               ))}
             </select>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white"
+            >
+              <option value="number">Sort by: Room Number</option>
+              <option value="status">Sort by: Available First</option>
+              <option value="capacity">Sort by: Highest Capacity</option>
+            </select>
           </div>
         </div>
       </div>
@@ -194,7 +261,7 @@ const RoomManagement: React.FC = () => {
         animate="visible"
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
       >
-        {filteredRooms.map((room) => {
+        {paginatedRooms.map((room) => {
           const isAvailable = room.status === "Available";
           const isMaintenance = room.status === "Maintenance";
 
@@ -204,7 +271,7 @@ const RoomManagement: React.FC = () => {
               variants={itemVariants}
               whileHover={{ y: -5 }}
               className={
-                "bg-white rounded-2xl shadow-sm border overflow-hidden " +
+                "bg-white rounded-2xl shadow-sm border overflow-hidden flex flex-col h-full " +
                 (isAvailable
                   ? "border-green-100"
                   : isMaintenance
@@ -239,7 +306,7 @@ const RoomManagement: React.FC = () => {
                 </span>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-3 flex-grow">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Type:</span>
                   <span className="font-medium">{room.type}</span>
@@ -249,10 +316,6 @@ const RoomManagement: React.FC = () => {
                   <span className="font-medium">
                     {room.occupied}/{room.capacity}
                   </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Monthly Rent:</span>
-                  <span className="font-medium">৳{room.monthlyRent}</span>
                 </div>
               </div>
 
@@ -270,11 +333,11 @@ const RoomManagement: React.FC = () => {
                 </div>
               </div>
 
-              <div className="mt-6 flex justify-end gap-2">
-                <button className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors">
+              <div className="mt-auto p-4 flex justify-end gap-2 bg-gray-50 border-t border-gray-100">
+                <button className="p-2 text-blue-600 hover:bg-white hover:shadow-sm rounded transition-all">
                   <Edit size={18} />
                 </button>
-                <button className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors">
+                <button className="p-2 text-red-600 hover:bg-white hover:shadow-sm rounded transition-all">
                   <Trash2 size={18} />
                 </button>
               </div>
@@ -283,13 +346,19 @@ const RoomManagement: React.FC = () => {
         })}
       </motion.div>
 
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
+
       {/* Add New Room Modal */}
       <Modal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
         title="Add New Room"
       >
-        <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+        <form className="space-y-4" onSubmit={handleAddRoom}>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-sm font-medium text-gray-700">
@@ -297,16 +366,22 @@ const RoomManagement: React.FC = () => {
               </label>
               <input
                 type="text"
+                value={newRoomNumber}
+                onChange={(e) => setNewRoomNumber(e.target.value)}
                 className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
                 placeholder="e.g. 101"
               />
             </div>
             <div className="space-y-1">
               <label className="text-sm font-medium text-gray-700">Floor</label>
-              <select className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
-                <option>1st Floor</option>
-                <option>2nd Floor</option>
-                <option>3rd Floor</option>
+              <select
+                value={newRoomFloor}
+                onChange={(e) => setNewRoomFloor(e.target.value)}
+                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+              >
+                <option value="1st">1st Floor</option>
+                <option value="2nd">2nd Floor</option>
+                <option value="3rd">3rd Floor</option>
               </select>
             </div>
           </div>
@@ -315,21 +390,15 @@ const RoomManagement: React.FC = () => {
               <label className="text-sm font-medium text-gray-700">
                 Room Type
               </label>
-              <select className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
-                <option>Single</option>
-                <option>Double</option>
-                <option>Triple</option>
-              </select>
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700">
-                Monthly Rent (৳)
-              </label>
-              <input
-                type="number"
+              <select
+                value={newRoomType}
+                onChange={(e) => setNewRoomType(e.target.value)}
                 className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                placeholder="e.g. 5000"
-              />
+              >
+                <option value="Single">Single</option>
+                <option value="Double">Double</option>
+                <option value="Triple">Triple</option>
+              </select>
             </div>
           </div>
           <div className="space-y-1">
@@ -338,6 +407,8 @@ const RoomManagement: React.FC = () => {
             </label>
             <input
               type="text"
+              value={newRoomFacilities}
+              onChange={(e) => setNewRoomFacilities(e.target.value)}
               className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
               placeholder="AC, Wifi, etc."
             />
