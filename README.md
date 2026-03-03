@@ -66,32 +66,6 @@ npm run build
 
 ---
 
-## 🌐 Free Hosting Guide
-
-You can host this project for free using **Vercel** or **Netlify**.
-
-### ⚡ Option 1: Vercel (Recommended)
-
-1. Sign in to [Vercel](https://vercel.com/) with your GitHub account.
-2. Click **"Add New"** > **"Project"**.
-3. Import your `Hall_Management_System_Frontend_V2` repository.
-4. Vercel will automatically detect the Vite framework:
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `dist`
-5. Click **Deploy**. Your site will be live in seconds!
-
-### 🌍 Option 2: Netlify
-
-1. Sign in to [Netlify](https://www.netlify.com/).
-2. Click **"Add new site"** > **"Import an existing project"**.
-3. Select GitHub and pick the repository.
-4. Settings:
-   - **Build command**: `npm run build`
-   - **Publish directory**: `dist`
-5. Click **Deploy site**.
-
----
-
 ## 🛠 Tech Stack
 
 - **Framework**: [React](https://reactjs.org/)
