@@ -16,7 +16,7 @@ import Pagination from "../../components/common/Pagination";
 import { useMockData } from "../../context/MockDataContext";
 
 const RoomManagement: React.FC = () => {
-  const { rooms, addRoom } = useMockData();
+  const { rooms, addRoom, deleteRoom } = useMockData();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterFloor, setFilterFloor] = useState("all");
   const [filterType, setFilterType] = useState("all");
@@ -32,7 +32,7 @@ const RoomManagement: React.FC = () => {
   }, [searchTerm, filterFloor, filterType, filterStatus, sortBy]);
 
   const [newRoomNumber, setNewRoomNumber] = useState("");
-  const [newRoomFloor, setNewRoomFloor] = useState("1st");
+  const [newRoomFloor, setNewRoomFloor] = useState("");
   const [newRoomType, setNewRoomType] = useState("Single");
   const [newRoomFacilities, setNewRoomFacilities] = useState("");
 
@@ -58,7 +58,7 @@ const RoomManagement: React.FC = () => {
         .filter(Boolean),
     });
     setNewRoomNumber("");
-    setNewRoomFloor("1st");
+    setNewRoomFloor("");
     setNewRoomType("Single");
     setNewRoomFacilities("");
     setShowAddModal(false);
@@ -211,11 +211,13 @@ const RoomManagement: React.FC = () => {
               className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
             >
               <option value="all">All Floors</option>
-              {["1st", "2nd", "3rd"].map((f) => (
-                <option key={f} value={f}>
-                  {f} Floor
-                </option>
-              ))}
+              {Array.from(new Set(rooms.map((r) => r.floor)))
+                .sort()
+                .map((f) => (
+                  <option key={f} value={f}>
+                    {f} Floor
+                  </option>
+                ))}
             </select>
             <select
               value={filterType}
@@ -334,10 +336,24 @@ const RoomManagement: React.FC = () => {
               </div>
 
               <div className="mt-auto p-4 flex justify-end gap-2 bg-gray-50 border-t border-gray-100">
-                <button className="p-2 text-blue-600 hover:bg-white hover:shadow-sm rounded transition-all">
+                <button
+                  className="p-2 text-gray-400 cursor-not-allowed rounded"
+                  title="Editing is disabled in mock preview"
+                >
                   <Edit size={18} />
                 </button>
-                <button className="p-2 text-red-600 hover:bg-white hover:shadow-sm rounded transition-all">
+                <button
+                  onClick={() => {
+                    if (
+                      window.confirm(
+                        "Are you sure you want to delete this room?",
+                      )
+                    ) {
+                      deleteRoom(room.id);
+                    }
+                  }}
+                  className="p-2 text-red-600 hover:bg-white hover:shadow-sm rounded transition-all"
+                >
                   <Trash2 size={18} />
                 </button>
               </div>
@@ -374,15 +390,13 @@ const RoomManagement: React.FC = () => {
             </div>
             <div className="space-y-1">
               <label className="text-sm font-medium text-gray-700">Floor</label>
-              <select
+              <input
+                type="text"
                 value={newRoomFloor}
                 onChange={(e) => setNewRoomFloor(e.target.value)}
                 className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-              >
-                <option value="1st">1st Floor</option>
-                <option value="2nd">2nd Floor</option>
-                <option value="3rd">3rd Floor</option>
-              </select>
+                placeholder="e.g. 6th, Ground, Annex"
+              />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">

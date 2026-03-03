@@ -3,16 +3,54 @@ import { User, Bell, AlertCircle, Key, CheckCircle } from "lucide-react";
 import { useMockData } from "../../context/MockDataContext";
 
 const SettingsSub: React.FC = () => {
-  const { currentUser } = useMockData();
+  const { currentUser, updateUserProfile } = useMockData();
   const [activeTab, setActiveTab] = useState("profile");
+
+  // Profile Form State
+  const [name, setName] = useState(currentUser?.name || "Manager");
+  const [phone, setPhone] = useState("+880 1234-567890");
+  const [designation, setDesignation] = useState("Senior Hall Manager");
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+
+  const handleSave = () => {
+    setIsSaving(true);
+
+    // Trigger Profile Update if we are on the profile tab
+    if (activeTab === "profile") {
+      updateUserProfile({
+        name,
+        phone: phone,
+        designation: designation,
+      } as any);
+    }
+
+    setTimeout(() => {
+      setIsSaving(false);
+      setIsSaved(true);
+      setTimeout(() => setIsSaved(false), 2000);
+    }, 800);
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h2 className="text-2xl font-bold text-gray-800">System Settings</h2>
-        <button className="flex items-center gap-2 px-6 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all font-semibold">
-          <CheckCircle size={20} />
-          Save Changes
+        <button
+          onClick={handleSave}
+          disabled={isSaving}
+          className={`flex items-center gap-2 px-6 py-2 text-white rounded-xl shadow-lg transition-all font-semibold ${
+            isSaved
+              ? "bg-green-500 shadow-green-100"
+              : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100"
+          } ${isSaving ? "opacity-75 cursor-not-allowed" : ""}`}
+        >
+          {isSaving ? (
+            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <CheckCircle size={20} />
+          )}
+          {isSaving ? "Saving..." : isSaved ? "Saved!" : "Save Changes"}
         </button>
       </div>
 
@@ -79,7 +117,8 @@ const SettingsSub: React.FC = () => {
                   </label>
                   <input
                     type="text"
-                    defaultValue={currentUser?.name || "Manager"}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                     className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
                   />
                 </div>
@@ -100,7 +139,8 @@ const SettingsSub: React.FC = () => {
                   </label>
                   <input
                     type="tel"
-                    defaultValue="+880 1234-567890"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
                     className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
                   />
                 </div>
@@ -110,7 +150,8 @@ const SettingsSub: React.FC = () => {
                   </label>
                   <input
                     type="text"
-                    defaultValue="Senior Hall Manager"
+                    value={designation}
+                    onChange={(e) => setDesignation(e.target.value)}
                     className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
                   />
                 </div>

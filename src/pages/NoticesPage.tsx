@@ -69,7 +69,6 @@ const NoticesPage = () => {
             date={notice.date}
             description={notice.description || notice.content}
             type={(notice.type as any) || "updates"}
-            onClick={() => alert(`Viewing details for: ${notice.title}`)}
           />
         ))}
       </div>

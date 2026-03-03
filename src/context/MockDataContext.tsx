@@ -116,7 +116,11 @@ interface MockDataContextType {
   deleteNotice: (id: number) => void;
   toggleNoticePin: (id: number) => void;
   addRoom: (room: Omit<Room, "id">) => void;
+  deleteRoom: (id: number) => void;
   addStudent: (student: Omit<Student, "id">) => void;
+  deleteStudent: (id: number) => void;
+  deleteComplaint: (id: number) => void;
+  updateUserProfile: (updates: Partial<User>) => void;
   appliedRooms: string[];
   applyForRoom: (roomNumber: string) => void;
 }
@@ -266,6 +270,37 @@ const generateNotices = (): Notice[] => {
   }
   return notices;
 };
+// --- LocalStorage Hook Helper ---
+function useLocalStorage<T>(
+  key: string,
+  initialValue: T | (() => T),
+): [T, React.Dispatch<React.SetStateAction<T>>] {
+  const [storedValue, setStoredValue] = useState<T>(() => {
+    try {
+      const item = window.localStorage.getItem(key);
+      if (item) {
+        return JSON.parse(item);
+      }
+      return initialValue instanceof Function ? initialValue() : initialValue;
+    } catch (error) {
+      console.warn(`Error reading localStorage key "${key}":`, error);
+      return initialValue instanceof Function ? initialValue() : initialValue;
+    }
+  });
+
+  const setValue: React.Dispatch<React.SetStateAction<T>> = (value) => {
+    try {
+      const valueToStore =
+        value instanceof Function ? value(storedValue) : value;
+      setStoredValue(valueToStore);
+      window.localStorage.setItem(key, JSON.stringify(valueToStore));
+    } catch (error) {
+      console.warn(`Error setting localStorage key "${key}":`, error);
+    }
+  };
+
+  return [storedValue, setValue];
+}
 // ---------------------------------
 
 export const useMockData = () => {
@@ -279,11 +314,14 @@ export const useMockData = () => {
 export const MockDataProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [appliedRooms, setAppliedRooms] = useState<string[]>([]);
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    const savedUser = localStorage.getItem("hms_currentUser");
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+  // Intentionally omitting useState for appliedRooms since it's converted below
 
   // Initial Seed Data
-  const [users, setUsers] = useState<User[]>([
+  const [users, setUsers] = useLocalStorage<User[]>("hms_users", [
     {
       id: 1,
       email: "manager@test.com",
@@ -300,12 +338,27 @@ export const MockDataProvider: React.FC<{ children: ReactNode }> = ({
     },
   ]);
 
-  const [rooms, setRooms] = useState<Room[]>(generateRooms());
-  const [students, setStudents] = useState<Student[]>(generateStudents());
-  const [complaints, setComplaints] =
-    useState<Complaint[]>(generateComplaints());
-  const [payments, setPayments] = useState<Payment[]>(generatePayments());
-  const [notices, setNotices] = useState<Notice[]>(generateNotices());
+  const [rooms, setRooms] = useLocalStorage<Room[]>("hms_rooms", generateRooms);
+  const [students, setStudents] = useLocalStorage<Student[]>(
+    "hms_students",
+    generateStudents,
+  );
+  const [complaints, setComplaints] = useLocalStorage<Complaint[]>(
+    "hms_complaints",
+    generateComplaints,
+  );
+  const [payments, setPayments] = useLocalStorage<Payment[]>(
+    "hms_payments",
+    generatePayments,
+  );
+  const [notices, setNotices] = useLocalStorage<Notice[]>(
+    "hms_notices",
+    generateNotices,
+  );
+  const [appliedRooms, setAppliedRooms] = useLocalStorage<string[]>(
+    "hms_appliedRooms",
+    [],
+  );
 
   const login = (email: string, pass: string) => {
     // Highly simplified mock check
@@ -313,6 +366,7 @@ export const MockDataProvider: React.FC<{ children: ReactNode }> = ({
     const validPassword = user?.password || "password123";
     if (user && pass === validPassword) {
       setCurrentUser(user);
+      localStorage.setItem("hms_currentUser", JSON.stringify(user));
       return true;
     }
     return false;
@@ -332,9 +386,13 @@ export const MockDataProvider: React.FC<{ children: ReactNode }> = ({
     };
     setUsers((prev) => [...prev, newUser]);
     setCurrentUser(newUser); // log them in automatically
+    localStorage.setItem("hms_currentUser", JSON.stringify(newUser));
   };
 
-  const logout = () => setCurrentUser(null);
+  const logout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem("hms_currentUser");
+  };
 
   // Data Actions
   const addComplaint = (
@@ -396,14 +454,38 @@ export const MockDataProvider: React.FC<{ children: ReactNode }> = ({
     setRooms((prev) => [{ id: Date.now(), ...r }, ...prev]);
   };
 
+  const deleteRoom = (id: number) => {
+    setRooms((prev) => prev.filter((r) => r.id !== id));
+  };
+
   const addStudent = (s: Omit<Student, "id">) => {
     setStudents((prev) => [{ id: Date.now(), ...s }, ...prev]);
+  };
+
+  const deleteStudent = (id: number) => {
+    setStudents((prev) => prev.filter((s) => s.id !== id));
+  };
+
+  const deleteComplaint = (id: number) => {
+    setComplaints((prev) => prev.filter((c) => c.id !== id));
   };
 
   const applyForRoom = (roomNumber: string) => {
     if (!appliedRooms.includes(roomNumber)) {
       setAppliedRooms((prev) => [...prev, roomNumber]);
     }
+  };
+
+  const updateUserProfile = (updates: Partial<User>) => {
+    if (!currentUser) return;
+
+    const updatedUser = { ...currentUser, ...updates };
+    setCurrentUser(updatedUser);
+    localStorage.setItem("hms_currentUser", JSON.stringify(updatedUser)); // Persist session update immediately
+
+    setUsers((prev) =>
+      prev.map((u) => (u.id === currentUser.id ? updatedUser : u)),
+    );
   };
 
   return (
@@ -422,13 +504,17 @@ export const MockDataProvider: React.FC<{ children: ReactNode }> = ({
         logout,
         addComplaint,
         updateComplaintStatus,
+        deleteComplaint,
         addPayment,
         addNotice,
         deleteNotice,
         toggleNoticePin,
         addRoom,
+        deleteRoom,
         addStudent,
+        deleteStudent,
         applyForRoom,
+        updateUserProfile,
       }}
     >
       {children}

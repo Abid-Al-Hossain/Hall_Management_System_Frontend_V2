@@ -38,6 +38,19 @@ const ManagerDashboard: React.FC = () => {
   const location = useLocation();
   const [selectedSection, setSelectedSection] = useState<DashboardSection>(
     () => {
+      const hash = window.location.hash.replace("#", "");
+      if (
+        [
+          "overview",
+          "rooms",
+          "students",
+          "notices",
+          "complaints",
+          "settings",
+        ].includes(hash)
+      ) {
+        return hash as DashboardSection;
+      }
       return (location.state?.activeSection as DashboardSection) || "overview";
     },
   );
@@ -46,9 +59,8 @@ const ManagerDashboard: React.FC = () => {
   const { students, rooms, complaints, notices } = useMockData();
 
   useEffect(() => {
-    const path = location.pathname.split("/").pop();
+    const hash = window.location.hash.replace("#", "");
     if (
-      path &&
       [
         "overview",
         "rooms",
@@ -56,11 +68,17 @@ const ManagerDashboard: React.FC = () => {
         "notices",
         "complaints",
         "settings",
-      ].includes(path)
+      ].includes(hash)
     ) {
-      setSelectedSection(path as DashboardSection);
+      setSelectedSection(hash as DashboardSection);
     }
   }, [location]);
+
+  const handleSectionChange = (id: DashboardSection) => {
+    setSelectedSection(id);
+    window.location.hash = id;
+    setIsMobileMenuOpen(false);
+  };
 
   const navigationItems: NavigationItem[] = [
     { id: "overview", label: "Overview", icon: PieChart },
@@ -145,10 +163,7 @@ const ManagerDashboard: React.FC = () => {
               key={id}
               whileHover={{ scale: 1.02, x: 5 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => {
-                setSelectedSection(id);
-                setIsMobileMenuOpen(false);
-              }}
+              onClick={() => handleSectionChange(id)}
               className={`
                 w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all
                 ${

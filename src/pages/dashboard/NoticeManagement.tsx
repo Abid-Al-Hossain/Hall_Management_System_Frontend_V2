@@ -248,7 +248,10 @@ const NoticeManagement: React.FC = () => {
                 </div>
               </div>
               <div className="flex gap-1">
-                <button className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all">
+                <button
+                  className="p-2 text-gray-400 cursor-not-allowed rounded-lg"
+                  title="Editing is disabled in mock preview"
+                >
                   <Edit size={18} />
                 </button>
                 <button

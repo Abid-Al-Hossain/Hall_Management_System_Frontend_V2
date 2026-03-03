@@ -1,18 +1,10 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useMockData } from "../context/MockDataContext";
 import RoomApplicationForm from "../components/rooms/RoomApplicationForm";
 import Pagination from "../components/common/Pagination";
 
 const RoomsPage = () => {
-  const { rooms, currentUser, appliedRooms } = useMockData();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!currentUser || currentUser.role !== "student") {
-      navigate("/");
-    }
-  }, [currentUser, navigate]);
+  const { rooms, appliedRooms } = useMockData();
 
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState("number");

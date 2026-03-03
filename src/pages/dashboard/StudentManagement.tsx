@@ -17,7 +17,7 @@ import Pagination from "../../components/common/Pagination";
 import { useMockData, Student } from "../../context/MockDataContext";
 
 const StudentManagement: React.FC = () => {
-  const { students, addStudent } = useMockData();
+  const { students, addStudent, deleteStudent } = useMockData();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDepartment, setFilterDepartment] = useState("all");
   const [filterYear, setFilterYear] = useState("all");
@@ -236,6 +236,7 @@ const StudentManagement: React.FC = () => {
               <option value="2nd Year">2nd Year</option>
               <option value="3rd Year">3rd Year</option>
               <option value="4th Year">4th Year</option>
+              <option value="Masters">Masters</option>
             </select>
             <select
               value={filterStatus}
@@ -314,10 +315,24 @@ const StudentManagement: React.FC = () => {
               </div>
 
               <div className="mt-auto pt-6 flex justify-end gap-2">
-                <button className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors">
+                <button
+                  className="p-2 text-gray-400 cursor-not-allowed rounded"
+                  title="Editing is disabled in mock preview"
+                >
                   <Edit size={18} />
                 </button>
-                <button className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors">
+                <button
+                  onClick={() => {
+                    if (
+                      window.confirm(
+                        `Are you sure you want to remove ${student.name}?`,
+                      )
+                    ) {
+                      deleteStudent(student.id);
+                    }
+                  }}
+                  className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                >
                   <Trash2 size={18} />
                 </button>
               </div>
@@ -390,6 +405,7 @@ const StudentManagement: React.FC = () => {
                 <option value="2nd Year">2nd Year</option>
                 <option value="3rd Year">3rd Year</option>
                 <option value="4th Year">4th Year</option>
+                <option value="Masters">Masters</option>
               </select>
             </div>
           </div>
