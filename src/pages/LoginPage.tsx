@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Mail, Lock } from "lucide-react";
 import { useMockData } from "../context/MockDataContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -82,9 +82,9 @@ const LoginPage = () => {
         </form>
         <p className="mt-4 text-center text-sm text-gray-600">
           Don't have an account?{" "}
-          <a href="/signup" className="text-indigo-600 hover:underline">
+          <Link to="/signup" className="text-indigo-600 hover:underline">
             Sign Up
-          </a>
+          </Link>
         </p>
       </div>
     </div>

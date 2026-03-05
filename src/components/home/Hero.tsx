@@ -1,8 +1,13 @@
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import DashboardIcon from "../icons/DashboardIcon";
+import { useMockData } from "../../context/MockDataContext";
 
 const Hero = () => {
+  const { currentUser } = useMockData();
+  const isManager = currentUser?.role === "manager";
+  const isStudent = currentUser?.role === "student";
+
   return (
     <div className="relative bg-gradient-to-r from-indigo-600 via-indigo-700 to-indigo-800 text-white overflow-hidden">
       <div className="absolute inset-0">
@@ -18,29 +23,44 @@ const Hero = () => {
             digital solution. Access all services and information in one place.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
-            <button className="group w-full sm:w-auto bg-white text-indigo-600 px-6 py-3 rounded-lg font-semibold hover:bg-indigo-50 transition-all duration-300 transform hover:scale-105">
-              View Rooms
-              <ArrowRight
-                className="inline-block ml-2 transform group-hover:translate-x-1 transition-transform duration-200"
-                size={20}
-              />
-            </button>
-            <button className="group w-full sm:w-auto border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-indigo-600 transition-all duration-300 transform hover:scale-105">
-              Submit Complaint
-              <ArrowRight
-                className="inline-block ml-2 transform group-hover:translate-x-1 transition-transform duration-200"
-                size={20}
-              />
-            </button>
-          </div>
-          <div className="flex gap-4 mt-8">
-            <Link
-              to="/manager"
-              className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-200"
-            >
-              <DashboardIcon size={20} />
-              Access Dashboard
-            </Link>
+            {isManager ? (
+              <Link to="/manager" className="w-full sm:w-auto">
+                <button className="group w-full flex items-center justify-center gap-2 bg-white text-indigo-600 px-6 py-3 rounded-lg font-semibold hover:bg-indigo-50 transition-all duration-300 transform hover:scale-105">
+                  <DashboardIcon size={20} />
+                  Access Dashboard
+                  <ArrowRight
+                    className="inline-block ml-2 transform group-hover:translate-x-1 transition-transform duration-200"
+                    size={20}
+                  />
+                </button>
+              </Link>
+            ) : (
+              <>
+                <Link
+                  to={isStudent ? "/rooms" : "/signup"}
+                  className="w-full sm:w-auto"
+                >
+                  <button className="group w-full flex items-center justify-center gap-2 bg-white text-indigo-600 px-6 py-3 rounded-lg font-semibold hover:bg-indigo-50 transition-all duration-300 transform hover:scale-105">
+                    {isStudent ? "View Rooms" : "Get Started"}
+                    <ArrowRight
+                      className="inline-block ml-2 transform group-hover:translate-x-1 transition-transform duration-200"
+                      size={20}
+                    />
+                  </button>
+                </Link>
+                {isStudent && (
+                  <Link to="/complaints" className="w-full sm:w-auto">
+                    <button className="group w-full flex items-center justify-center gap-2 border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-indigo-600 transition-all duration-300 transform hover:scale-105">
+                      Submit Complaint
+                      <ArrowRight
+                        className="inline-block ml-2 transform group-hover:translate-x-1 transition-transform duration-200"
+                        size={20}
+                      />
+                    </button>
+                  </Link>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>
