@@ -1,9 +1,9 @@
-import { LogIn, UserPlus } from "lucide-react";
+import { LogIn, UserPlus, RefreshCw } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useMockData } from "../../context/MockDataContext";
 
 const AuthButtons = () => {
-  const { currentUser, logout } = useMockData();
+  const { currentUser, logout, resetAllData } = useMockData();
 
   if (currentUser) {
     return (
@@ -16,6 +16,13 @@ const AuthButtons = () => {
           className="flex items-center space-x-1 px-4 py-2 rounded-lg bg-indigo-700 text-white hover:bg-indigo-800 transition-colors duration-200"
         >
           <span>Logout</span>
+        </button>
+        <button
+          onClick={resetAllData}
+          title="Reset All Demo Data"
+          className="flex items-center space-x-1 p-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors duration-200"
+        >
+          <RefreshCw size={18} />
         </button>
       </div>
     );
@@ -40,6 +47,13 @@ const AuthButtons = () => {
           <span>Sign Up</span>
         </button>
       </Link>
+      <button
+        onClick={resetAllData}
+        title="Reset All Demo Data"
+        className="flex items-center space-x-1 p-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors duration-200"
+      >
+        <RefreshCw size={18} />
+      </button>
     </div>
   );
 };

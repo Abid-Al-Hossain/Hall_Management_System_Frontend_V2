@@ -16,7 +16,9 @@ const SignupPage = () => {
       return;
     }
     register(email, password, role);
-    alert("Registration successful! You are now logged in.");
+
+    // The register function in context handles creating the student profile
+    // Now we navigate based on the role
     if (role === "manager") {
       navigate("/manager");
     } else {

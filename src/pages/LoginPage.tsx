@@ -6,6 +6,7 @@ import { useNavigate, Link } from "react-router-dom";
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState<"student" | "manager">("student");
   const [errorMsg, setErrorMsg] = useState("");
   const { login } = useMockData();
   const navigate = useNavigate();
@@ -17,11 +18,9 @@ const LoginPage = () => {
       setErrorMsg("Please enter both email and password.");
       return;
     }
-    const success = login(email, password);
+    const success = login(email, password, role);
     if (success) {
-      // Find the user to check role, technically current user is updated in context but react might not see it mid-render for the redirect
-      // For this simple mock, if login works we just send to manager if email has 'manager', else root
-      if (email.includes("manager")) {
+      if (role === "manager") {
         navigate("/manager");
       } else {
         navigate("/");
@@ -71,6 +70,23 @@ const LoginPage = () => {
                 placeholder="Enter your password"
                 className="mt-1 block w-full p-2 border-none focus:ring-0"
               />
+            </div>
+          </div>
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700">
+              Role
+            </label>
+            <div className="flex items-center border border-gray-300 rounded-lg shadow-sm focus-within:ring-indigo-500 focus-within:border-indigo-500">
+              <select
+                value={role}
+                onChange={(e) =>
+                  setRole(e.target.value as "student" | "manager")
+                }
+                className="mt-1 block w-full p-2 border-none focus:ring-0 rounded-lg text-gray-700"
+              >
+                <option value="student">Student</option>
+                <option value="manager">Manager</option>
+              </select>
             </div>
           </div>
           <button

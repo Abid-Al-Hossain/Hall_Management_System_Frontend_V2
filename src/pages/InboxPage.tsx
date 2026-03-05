@@ -5,7 +5,8 @@ import { useMockData, Message } from "../context/MockDataContext";
 import Pagination from "../components/common/Pagination";
 
 const InboxPage: React.FC = () => {
-  const { messages, currentUser, markMessageAsRead } = useMockData();
+  const { messages, currentUser, markMessageAsRead, deleteMessage } =
+    useMockData();
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -203,11 +204,23 @@ const InboxPage: React.FC = () => {
 
                 <div className="p-6 bg-gray-50 flex justify-end gap-4 border-t border-gray-100">
                   <button
-                    className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 text-gray-600 rounded-2xl font-bold hover:bg-gray-100 transition-all text-sm"
-                    onClick={() => {}}
+                    className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 text-gray-600 rounded-2xl font-bold hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition-all text-sm group"
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          "Are you sure you want to delete this message?",
+                        )
+                      ) {
+                        deleteMessage(selectedMessage.id);
+                        setSelectedMessage(null);
+                      }
+                    }}
                   >
-                    <Trash2 size={18} className="text-red-400" />
-                    Archive Message
+                    <Trash2
+                      size={18}
+                      className="text-red-400 group-hover:text-red-600 transition-colors"
+                    />
+                    Delete Message
                   </button>
                 </div>
               </motion.div>

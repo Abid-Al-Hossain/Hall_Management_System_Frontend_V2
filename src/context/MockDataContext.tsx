@@ -121,7 +121,7 @@ interface MockDataContextType {
   complaints: Complaint[];
   payments: Payment[];
   notices: Notice[];
-  login: (email: string, pass: string) => boolean;
+  login: (email: string, pass: string, role: "student" | "manager") => boolean;
   register: (email: string, pass: string, role?: "student" | "manager") => void;
   logout: () => void;
   addComplaint: (
@@ -153,6 +153,8 @@ interface MockDataContextType {
   messages: Message[];
   addMessage: (recipientId: number, subject: string, content: string) => void;
   markMessageAsRead: (id: number) => void;
+  deleteMessage: (id: number) => void;
+  resetAllData: () => void;
 }
 
 const MockDataContext = createContext<MockDataContextType | null>(null);
@@ -412,11 +414,9 @@ export const MockDataProvider: React.FC<{ children: ReactNode }> = ({
     [],
   );
 
-  const login = (email: string, pass: string) => {
-    // Highly simplified mock check
-    const user = users.find((u) => u.email === email);
-    const validPassword = user?.password || "password123";
-    if (user && pass === validPassword) {
+  const login = (email: string, pass: string, role: "student" | "manager") => {
+    const user = users.find((u) => u.email === email && u.role === role);
+    if (user && user.password === pass) {
       setCurrentUser(user);
       localStorage.setItem("hms_currentUser", JSON.stringify(user));
       return true;
@@ -429,14 +429,42 @@ export const MockDataProvider: React.FC<{ children: ReactNode }> = ({
     _pass: string,
     role: "student" | "manager" = "student",
   ) => {
+    const newUserId = Date.now();
     const newUser: User = {
-      id: Date.now(),
+      id: newUserId,
       email,
       name: email.split("@")[0],
       role,
       password: _pass,
     };
+
     setUsers((prev) => [...prev, newUser]);
+
+    // If it's a student, create a matching student profile
+    if (role === "student") {
+      const newStudent: Student = {
+        id: newUserId, // Use same ID for linkage
+        name: email.split("@")[0],
+        studentId: `2024${Math.floor(Math.random() * 1000)
+          .toString()
+          .padStart(3, "0")}`,
+        photo: `https://ui-avatars.com/api/?name=${email.split("@")[0]}&background=random`,
+        room: "Pending", // Initial state
+        department: "General",
+        year: "1st Year",
+        email: email,
+        phone: "Not Set",
+        guardianName: "Not Set",
+        guardianPhone: "Not Set",
+        address: "Not Set",
+        status: "Active",
+        joinDate: new Date().toISOString().split("T")[0],
+        paymentStatus: "Pending",
+        attendance: 0,
+      };
+      setStudents((prev) => [newStudent, ...prev]);
+    }
+
     setCurrentUser(newUser); // log them in automatically
     localStorage.setItem("hms_currentUser", JSON.stringify(newUser));
   };
@@ -536,6 +564,21 @@ export const MockDataProvider: React.FC<{ children: ReactNode }> = ({
     setUsers((prev) =>
       prev.map((u) => (u.id === currentUser.id ? updatedUser : u)),
     );
+
+    // If student, synchronize matching student record
+    if (currentUser.role === "student") {
+      setStudents((prev) =>
+        prev.map((s) =>
+          s.id === currentUser.id || s.email === currentUser.email
+            ? {
+                ...s,
+                name: updates.name || s.name,
+                email: updates.email || s.email,
+              }
+            : s,
+        ),
+      );
+    }
   };
 
   const addRoomApplication = (roomNumber: string) => {
@@ -556,16 +599,46 @@ export const MockDataProvider: React.FC<{ children: ReactNode }> = ({
     status: "Accepted" | "Rejected",
     message: string,
   ) => {
+    // Find the application in current state
+    const application = roomApplications.find((a) => a.id === id);
+    if (!application) return;
+
+    // Update application status
     setRoomApplications((prev) =>
       prev.map((app) => (app.id === id ? { ...app, status, message } : app)),
     );
 
-    const app = roomApplications.find((a) => a.id === id);
-    if (app) {
-      addMessage(
-        app.studentId,
-        `Room Application ${status}: Room ${app.roomNumber}`,
-        `Your application for Room ${app.roomNumber} has been ${status.toLowerCase()}.${message ? ` Message: ${message}` : ""}`,
+    // Send notification message to student
+    addMessage(
+      application.studentId,
+      `Room Application ${status}: Room ${application.roomNumber}`,
+      `Your application for Room ${application.roomNumber} has been ${status.toLowerCase()}.${message ? ` Message: ${message}` : ""}`,
+    );
+
+    // If accepted, update room occupancy and student record
+    if (status === "Accepted") {
+      setRooms((prev) =>
+        prev.map((r) => {
+          if (r.number === application.roomNumber) {
+            const newOccupied = Math.min(r.capacity, r.occupied + 1);
+            return {
+              ...r,
+              occupied: newOccupied,
+              status: newOccupied >= r.capacity ? "Occupied" : r.status,
+            };
+          }
+          return r;
+        }),
+      );
+
+      // Update student's room in the directory
+      // We try to match by studentId (as User ID) or studentName as a fallback
+      setStudents((prev) =>
+        prev.map((s) =>
+          s.id === application.studentId || s.name === application.studentName
+            ? { ...s, room: application.roomNumber }
+            : s,
+        ),
       );
     }
   };
@@ -591,6 +664,15 @@ export const MockDataProvider: React.FC<{ children: ReactNode }> = ({
     setMessages((prev) =>
       prev.map((msg) => (msg.id === id ? { ...msg, isRead: true } : msg)),
     );
+  };
+
+  const deleteMessage = (id: number) => {
+    setMessages((prev) => prev.filter((msg) => msg.id !== id));
+  };
+
+  const resetAllData = () => {
+    localStorage.clear();
+    window.location.href = "/";
   };
 
   return (
@@ -626,6 +708,8 @@ export const MockDataProvider: React.FC<{ children: ReactNode }> = ({
         messages,
         addMessage,
         markMessageAsRead,
+        deleteMessage,
+        resetAllData,
       }}
     >
       {children}
