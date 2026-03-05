@@ -19,6 +19,7 @@ import NoticesPage from "./pages/NoticesPage";
 import PaymentPage from "./pages/PaymentPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
+import InboxPage from "./pages/InboxPage";
 import PageTransition from "./components/layout/PageTransition";
 import { MockDataProvider } from "./context/MockDataContext";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
@@ -85,6 +86,16 @@ function AnimatedRoutes() {
             <ProtectedRoute allowedRole="student">
               <PageTransition>
                 <PaymentPage />
+              </PageTransition>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/inbox"
+          element={
+            <ProtectedRoute allowedRole="student">
+              <PageTransition>
+                <InboxPage />
               </PageTransition>
             </ProtectedRoute>
           }

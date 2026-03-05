@@ -68,6 +68,26 @@ export interface Complaint {
   comments: number | Array<any>;
 }
 
+export interface RoomApplication {
+  id: number;
+  studentId: number;
+  studentName: string;
+  roomNumber: string;
+  status: "Pending" | "Accepted" | "Rejected";
+  appliedAt: string;
+  message?: string; // Message from manager when accepted/rejected
+}
+
+export interface Message {
+  id: number;
+  recipientId: number; // Student's user id
+  senderName: string; // Manager
+  subject: string;
+  content: string;
+  isRead: boolean;
+  sentAt: string;
+}
+
 export interface Payment {
   id: number;
   studentName: string;
@@ -123,6 +143,16 @@ interface MockDataContextType {
   updateUserProfile: (updates: Partial<User>) => void;
   appliedRooms: string[];
   applyForRoom: (roomNumber: string) => void;
+  roomApplications: RoomApplication[];
+  addRoomApplication: (roomNumber: string) => void;
+  updateRoomApplicationStatus: (
+    id: number,
+    status: "Accepted" | "Rejected",
+    message: string,
+  ) => void;
+  messages: Message[];
+  addMessage: (recipientId: number, subject: string, content: string) => void;
+  markMessageAsRead: (id: number) => void;
 }
 
 const MockDataContext = createContext<MockDataContextType | null>(null);
@@ -318,6 +348,28 @@ export const MockDataProvider: React.FC<{ children: ReactNode }> = ({
     const savedUser = localStorage.getItem("hms_currentUser");
     return savedUser ? JSON.parse(savedUser) : null;
   });
+
+  const [roomApplications, setRoomApplications] = useLocalStorage<
+    RoomApplication[]
+  >("hms_room_applications", []);
+
+  const [messages, setMessages] = useLocalStorage<Message[]>(
+    "hms_messages",
+    [],
+  );
+
+  // Sync auth state across tabs
+  React.useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "hms_currentUser") {
+        const newUser = e.newValue ? JSON.parse(e.newValue) : null;
+        setCurrentUser(newUser);
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
   // Intentionally omitting useState for appliedRooms since it's converted below
 
   // Initial Seed Data
@@ -471,9 +523,7 @@ export const MockDataProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   const applyForRoom = (roomNumber: string) => {
-    if (!appliedRooms.includes(roomNumber)) {
-      setAppliedRooms((prev) => [...prev, roomNumber]);
-    }
+    setAppliedRooms((prev) => [...prev, roomNumber]);
   };
 
   const updateUserProfile = (updates: Partial<User>) => {
@@ -485,6 +535,61 @@ export const MockDataProvider: React.FC<{ children: ReactNode }> = ({
 
     setUsers((prev) =>
       prev.map((u) => (u.id === currentUser.id ? updatedUser : u)),
+    );
+  };
+
+  const addRoomApplication = (roomNumber: string) => {
+    if (!currentUser) return;
+    const newApp: RoomApplication = {
+      id: Date.now(),
+      studentId: currentUser.id,
+      studentName: currentUser.name,
+      roomNumber: roomNumber,
+      status: "Pending",
+      appliedAt: new Date().toLocaleDateString(),
+    };
+    setRoomApplications((prev) => [newApp, ...prev]);
+  };
+
+  const updateRoomApplicationStatus = (
+    id: number,
+    status: "Accepted" | "Rejected",
+    message: string,
+  ) => {
+    setRoomApplications((prev) =>
+      prev.map((app) => (app.id === id ? { ...app, status, message } : app)),
+    );
+
+    const app = roomApplications.find((a) => a.id === id);
+    if (app) {
+      addMessage(
+        app.studentId,
+        `Room Application ${status}: Room ${app.roomNumber}`,
+        `Your application for Room ${app.roomNumber} has been ${status.toLowerCase()}.${message ? ` Message: ${message}` : ""}`,
+      );
+    }
+  };
+
+  const addMessage = (
+    recipientId: number,
+    subject: string,
+    content: string,
+  ) => {
+    const newMessage: Message = {
+      id: Date.now(),
+      recipientId,
+      senderName: "Hall Manager",
+      subject,
+      content,
+      isRead: false,
+      sentAt: new Date().toLocaleString(),
+    };
+    setMessages((prev) => [newMessage, ...prev]);
+  };
+
+  const markMessageAsRead = (id: number) => {
+    setMessages((prev) =>
+      prev.map((msg) => (msg.id === id ? { ...msg, isRead: true } : msg)),
     );
   };
 
@@ -515,6 +620,12 @@ export const MockDataProvider: React.FC<{ children: ReactNode }> = ({
         deleteStudent,
         applyForRoom,
         updateUserProfile,
+        roomApplications,
+        addRoomApplication,
+        updateRoomApplicationStatus,
+        messages,
+        addMessage,
+        markMessageAsRead,
       }}
     >
       {children}

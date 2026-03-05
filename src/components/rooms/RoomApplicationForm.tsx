@@ -10,24 +10,16 @@ const RoomApplicationForm: React.FC<RoomApplicationFormProps> = ({
   roomNumber,
   onClose,
 }) => {
-  const { addComplaint, currentUser, applyForRoom } = useMockData();
+  const { currentUser, addRoomApplication } = useMockData();
   const [studentName, setStudentName] = useState(currentUser?.name || "");
   const [studentId, setStudentId] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    addComplaint({
-      title: `Room Application: ${roomNumber}`,
-      description: `Student ${studentName} (ID: ${studentId}) is applying for room ${roomNumber}.`,
-      category: "Maintenance", // Routing to maintenance temporarily for manager visibility
-      priority: "Medium",
-      studentName: studentName,
-      room: "N/A",
-    });
+    addRoomApplication(roomNumber);
     alert(
-      `Application successfully submitted for Room ${roomNumber}! The Manager can view this in the Pending Requests / Complaint Box.`,
+      `Application successfully submitted for Room ${roomNumber}! You can track your application status in your Inbox once the Manager reviews it.`,
     );
-    applyForRoom(roomNumber);
     onClose();
   };
 

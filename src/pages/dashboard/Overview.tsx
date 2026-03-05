@@ -17,6 +17,7 @@ interface OverviewProps {
     occupiedRooms: number;
     availableRooms: number;
     pendingComplaints: number;
+    pendingApplications: number;
     totalNotices: number;
   };
   complaints: Complaint[];
@@ -54,7 +55,7 @@ const Overview: React.FC<OverviewProps> = ({ stats, complaints }) => {
   return (
     <div className="space-y-6">
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
           <div className="flex justify-between items-start">
             <div>
@@ -87,6 +88,23 @@ const Overview: React.FC<OverviewProps> = ({ stats, complaints }) => {
             </div>
             <div className="p-3 bg-indigo-100 rounded-lg">
               <Home className="text-indigo-600" size={24} />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-sm text-gray-600">Pending Applications</p>
+              <h3 className="text-2xl font-bold text-gray-800 mt-1">
+                {stats.pendingApplications}
+              </h3>
+              <span className="text-xs text-orange-600 flex items-center mt-1">
+                Action Required
+              </span>
+            </div>
+            <div className="p-3 bg-orange-100 rounded-lg">
+              <Home className="text-orange-600" size={24} />
             </div>
           </div>
         </div>

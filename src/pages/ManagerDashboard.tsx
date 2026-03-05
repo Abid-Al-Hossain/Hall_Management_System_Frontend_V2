@@ -17,12 +17,14 @@ import StudentManagement from "./dashboard/StudentManagement";
 import NoticeManagement from "./dashboard/NoticeManagement";
 import ComplaintManagement from "./dashboard/ComplaintManagement";
 import Overview from "./dashboard/Overview";
+import RoomApplicationManagement from "./dashboard/RoomApplicationManagement";
 import SettingsSub from "./dashboard/SettingsSub";
 import { useMockData } from "../context/MockDataContext";
 
 type DashboardSection =
   | "overview"
   | "rooms"
+  | "room-applications"
   | "students"
   | "notices"
   | "complaints"
@@ -56,7 +58,8 @@ const ManagerDashboard: React.FC = () => {
   );
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const { students, rooms, complaints, notices } = useMockData();
+  const { students, rooms, complaints, notices, roomApplications } =
+    useMockData();
 
   useEffect(() => {
     const hash = window.location.hash.replace("#", "");
@@ -83,6 +86,7 @@ const ManagerDashboard: React.FC = () => {
   const navigationItems: NavigationItem[] = [
     { id: "overview", label: "Overview", icon: PieChart },
     { id: "rooms", label: "Room Management", icon: Home },
+    { id: "room-applications", label: "Room Applications", icon: AlertCircle },
     { id: "students", label: "Student Management", icon: Users },
     { id: "notices", label: "Notice Management", icon: Bell },
     { id: "complaints", label: "Complaint Box", icon: AlertCircle },
@@ -94,8 +98,12 @@ const ManagerDashboard: React.FC = () => {
     occupiedRooms: rooms.filter((r) => r.status === "Occupied").length,
     availableRooms: rooms.filter((r) => r.status === "Available").length,
     pendingComplaints: complaints.filter(
-      (c) => c.status.toLowerCase() !== "resolved",
+      (c) =>
+        c.status.toLowerCase() !== "resolved" &&
+        c.category !== "Room Application",
     ).length,
+    pendingApplications: roomApplications.filter((a) => a.status === "Pending")
+      .length,
     totalNotices: notices.length,
   };
 
@@ -113,6 +121,8 @@ const ManagerDashboard: React.FC = () => {
             switch (selectedSection) {
               case "rooms":
                 return <RoomManagement />;
+              case "room-applications":
+                return <RoomApplicationManagement />;
               case "students":
                 return <StudentManagement />;
               case "notices":

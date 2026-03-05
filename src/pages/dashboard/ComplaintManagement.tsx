@@ -11,6 +11,7 @@ import {
   Download,
   RefreshCw,
   Wrench,
+  Home,
 } from "lucide-react";
 import { useMockData } from "../../context/MockDataContext";
 import Modal from "../../components/common/Modal";
@@ -97,6 +98,8 @@ const ComplaintManagement: React.FC = () => {
         return Building;
       case "roommate":
         return Users;
+      case "room application":
+        return Home;
       case "other":
       default:
         return AlertCircle;
@@ -250,6 +253,7 @@ const ComplaintManagement: React.FC = () => {
               <option value="maintenance">Maintenance</option>
               <option value="facility">Facility</option>
               <option value="roommate">Roommate</option>
+              <option value="Room Application">Room Application</option>
               <option value="other">Other</option>
             </select>
             <select
@@ -410,6 +414,7 @@ const ComplaintManagement: React.FC = () => {
               <option value="Maintenance">Maintenance</option>
               <option value="Facility">Facility</option>
               <option value="Roommate">Roommate</option>
+              <option value="Room Application">Room Application</option>
               <option value="Other">Other</option>
             </select>
           </div>
